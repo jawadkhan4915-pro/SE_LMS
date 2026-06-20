@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const axios = require('axios');
 const OnlineLecture = require('../models/onlineLecture');
 const Course = require('../models/course');
 const Enrollment = require('../models/enrollment');
@@ -140,10 +139,12 @@ exports.joinLecture = async (req, res) => {
     // 1. Google Token verification (if token is provided and is a real token)
     if (googleIdToken && googleIdToken !== 'mock_token') {
       try {
-        const googleRes = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${googleIdToken}`);
-        if (googleRes.data && googleRes.data.email) {
-          verifiedEmail = googleRes.data.email;
-          if (!googleRes.data.email_verified) {
+        const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${googleIdToken}`);
+        const googleData = await response.json();
+        
+        if (googleData && googleData.email) {
+          verifiedEmail = googleData.email;
+          if (googleData.email_verified !== 'true' && googleData.email_verified !== true) {
             return res.status(400).json({ success: false, message: 'Google email address is not verified' });
           }
         } else {
