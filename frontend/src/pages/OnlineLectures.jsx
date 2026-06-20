@@ -70,7 +70,7 @@ const OnlineLectures = () => {
     }
 
     try {
-      await api.post('/api/lectures', {
+      await api.post('/lectures', {
         courseId,
         title,
         description,

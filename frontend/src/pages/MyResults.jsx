@@ -197,8 +197,8 @@ const MyResults = () => {
                           <td className="px-5 py-3.5 text-center font-bold text-slate-900">{r.totalMarks}</td>
                           <td className="px-5 py-3.5 text-center">
                             <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
-                              r.grade.includes('F') ? 'bg-red-50 text-red-600 border border-red-200' :
-                              r.grade.includes('A') ? 'bg-emerald-50 text-emerald-600 border border-emerald-250' :
+                              (r.grade || '').includes('F') ? 'bg-red-50 text-red-600 border border-red-200' :
+                              (r.grade || '').includes('A') ? 'bg-emerald-50 text-emerald-600 border border-emerald-250' :
                               'bg-indigo-50 text-indigo-600 border border-indigo-200'
                             }`}>
                               {r.grade}

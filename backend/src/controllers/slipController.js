@@ -25,37 +25,42 @@ exports.getFeeSlip = async (req, res) => {
     };
 
     const fees = feeStructure[semester] || feeStructure[1];
-    const total = Object.values(fees).reduce((s, v) => s + v, 0);
+    const totalAmount = Object.values(fees).reduce((s, v) => s + v, 0);
 
-    // Generate voucher number (deterministic based on student + semester)
+    const feesBreakdown = [
+      { category: 'Tuition Fee', amount: fees.tuitionFee },
+      { category: 'Exam Fee', amount: fees.examFee },
+      { category: 'Library Fee', amount: fees.libraryFee },
+      { category: 'Lab & Equipment Fee', amount: fees.labFee }
+    ];
+    if (fees.admissionFee > 0) {
+      feesBreakdown.push({ category: 'Admission & Registration Fee', amount: fees.admissionFee });
+    }
+
     const voucherNo = `FEE-${new Date().getFullYear()}-${String(student._id).slice(-6).toUpperCase()}-S${semester}`;
-
     const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + 15); // due in 15 days
+    dueDate.setDate(dueDate.getDate() + 15);
+
+    const rollNumber = `SE-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`;
 
     const feeSlip = {
       voucherNo,
+      status: 'Unpaid',
       student: {
         name: student.name,
+        rollNumber,
         email: student.email,
-        phone: student.phone,
-        rollNo: `SE-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`,
-        semester
+        phone: student.phone
       },
-      fees: {
-        ...fees,
-        total
-      },
-      academicYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
-      dueDate: dueDate.toISOString(),
+      semester,
+      feesBreakdown,
+      totalAmount,
+      dueDate: dueDate.toLocaleDateString('en-US', { dateStyle: 'medium' }),
       bankDetails: {
         bankName: 'HBL – Habib Bank Limited',
-        accountTitle: 'University of Technology – SE Dept',
-        accountNo: '12345-678901-234',
-        branchCode: '0123',
-        iban: 'PK36 HABB 0000000123456789'
-      },
-      issuedOn: new Date().toISOString()
+        title: 'University of Technology – SE Dept',
+        accountNo: '12345-678901-234'
+      }
     };
 
     res.json({ success: true, data: feeSlip });
@@ -75,38 +80,34 @@ exports.getRollNumberSlip = async (req, res) => {
     }
 
     const enrollments = await Enrollment.find({ student: req.user.id, approvalStatus: 'approved' })
-      .populate('course', 'name code creditHours semester');
+      .populate({
+        path: 'course',
+        select: 'name code creditHours semester teacher',
+        populate: {
+          path: 'teacher',
+          select: 'name'
+        }
+      });
 
-    const rollNo = `SE-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`;
-
+    const rollNumber = `SE-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`;
     const examYear = new Date().getFullYear();
-    const examDates = {
-      midterm:   { start: `${examYear}-10-20`, end: `${examYear}-10-28` },
-      finalterm: { start: `${examYear}-12-10`, end: `${examYear}-12-20` }
-    };
 
     const slip = {
-      rollNo,
+      examSession: `Fall ${examYear}`,
+      rollNumber,
       student: {
         name: student.name,
-        email: student.email,
-        phone: student.phone,
-        semester: student.semester,
         program: 'BS Software Engineering',
-        department: 'Software Engineering',
-        university: 'University of Technology'
+        email: student.email,
+        contact: student.phone || 'N/A'
       },
-      enrolledCourses: enrollments.map((e, i) => ({
-        sNo: i + 1,
+      semester: student.semester || 1,
+      courses: enrollments.map(e => ({
         code: e.course?.code,
         name: e.course?.name,
-        creditHours: e.course?.creditHours,
-        examDate: 'As Per Schedule'
+        teacher: e.course?.teacher?.name || 'TBA'
       })),
-      examSchedule: examDates,
-      academicYear: `${examYear}-${examYear + 1}`,
-      issuedOn: new Date().toISOString(),
-      instructions: [
+      instructionNotes: [
         'Bring this slip to the examination center.',
         'Present your original CNIC/Student ID along with this slip.',
         'No electronic device is allowed inside the exam hall.',
