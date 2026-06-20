@@ -71,8 +71,7 @@ exports.getLectures = async (req, res) => {
     if (req.user.role === 'teacher') {
       query = { teacher: req.user.id };
     } else if (req.user.role === 'student') {
-      // Find student enrolled courses
-      const enrollments = await Enrollment.find({ student: req.user.id, approvalStatus: 'approved' }).select('course');
+      const enrollments = await Enrollment.find({ student: req.user.id }).select('course');
       const courseIds = enrollments.map(e => e.course);
       query = { course: { $in: courseIds } };
     }
@@ -105,8 +104,7 @@ exports.getLectureByMeetingId = async (req, res) => {
     if (req.user.role === 'student') {
       const isEnrolled = await Enrollment.findOne({
         student: req.user.id,
-        course: lecture.course._id,
-        approvalStatus: 'approved'
+        course: lecture.course._id
       });
 
       if (!isEnrolled) {
@@ -176,6 +174,39 @@ exports.joinLecture = async (req, res) => {
         joinedAt: new Date()
       });
       await lecture.save();
+    }
+
+    // 4. Automatically mark student as present in today's Attendance register
+    try {
+      const today = new Date();
+      today.setUTCHours(0,0,0,0);
+
+      const Attendance = require('../models/attendance');
+      let attendance = await Attendance.findOne({ course: lecture.course, date: today });
+      if (!attendance) {
+        attendance = await Attendance.create({
+          course: lecture.course,
+          date: today,
+          lectureTime: `${lecture.startTime} - ${lecture.endTime}`,
+          topic: `Online Lecture: ${lecture.title}`,
+          markedBy: lecture.teacher,
+          records: []
+        });
+      }
+
+      const alreadyMarked = attendance.records.some(
+        r => r.student.toString() === req.user.id
+      );
+
+      if (!alreadyMarked) {
+        attendance.records.push({
+          student: req.user.id,
+          status: 'present'
+        });
+        await attendance.save();
+      }
+    } catch (attendanceErr) {
+      console.error('Failed to log automatic online lecture attendance:', attendanceErr.message);
     }
 
     res.json({ 
