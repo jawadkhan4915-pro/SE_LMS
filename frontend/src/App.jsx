@@ -31,6 +31,8 @@ import SessionalMarks from './pages/SessionalMarks';
 import UploadResults from './pages/UploadResults';
 import SessionalMarksTeacher from './pages/SessionalMarksTeacher';
 import HODEnrollmentApproval from './pages/HODEnrollmentApproval';
+import OnlineLectures from './pages/OnlineLectures';
+import LectureRoom from './pages/LectureRoom';
 
 // Admin / HOD Pages
 import ManageUsers from './pages/ManageUsers';
@@ -48,6 +50,16 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* Fullscreen Secure Lecture Room (Distraction-free) */}
+          <Route 
+            path="/lecture/:meetingId" 
+            element={
+              <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
+                <LectureRoom />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Secure Workspace Modules inside MainLayout */}
           <Route 
@@ -70,6 +82,9 @@ function App() {
 
             {/* Courses views */}
             <Route path="courses" element={<Courses />} />
+            
+            {/* Online Lectures List */}
+            <Route path="lectures" element={<OnlineLectures />} />
 
             {/* Student specific metrics */}
             <Route 
