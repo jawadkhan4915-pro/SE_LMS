@@ -16,7 +16,8 @@ import {
   GraduationCap,
   ChevronRight,
   CreditCard,
-  CheckSquare
+  CheckSquare,
+  Video
 } from 'lucide-react';
 
 const roleColors = {
@@ -54,6 +55,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/sessional', label: 'Sessional Marks', icon: CheckSquare },
           { path: '/results', label: 'Transcript & Results', icon: GraduationCap },
           { path: '/slips', label: 'Slips & Vouchers', icon: CreditCard },
+          { path: '/lectures', label: 'Online Lectures', icon: Video },
         ];
       case 'teacher':
         return [
@@ -64,6 +66,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/quizzes/manage', label: 'Quizzes', icon: Award },
           { path: '/sessional/manage', label: 'Sessional Marks', icon: CheckSquare },
           { path: '/results/upload', label: 'Manage Exam Results', icon: GraduationCap },
+          { path: '/lectures', label: 'Online Lectures', icon: Video },
         ];
       case 'hod':
         return [

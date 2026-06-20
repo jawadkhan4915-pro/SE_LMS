@@ -21,6 +21,7 @@ const enrollmentRequestRoutes = require('./routes/enrollmentRequestRoutes');
 const resultRoutes = require('./routes/resultRoutes');
 const sessionalRoutes = require('./routes/sessionalRoutes');
 const slipRoutes = require('./routes/slipRoutes');
+const onlineLectureRoutes = require('./routes/onlineLectureRoutes');
 
 // Initialize app
 const app = express();
@@ -68,6 +69,7 @@ app.use('/api/enrollment-requests', enrollmentRequestRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/sessional', sessionalRoutes);
 app.use('/api/slips', slipRoutes);
+app.use('/api/lectures', onlineLectureRoutes);
 
 // Root route status check
 app.get('/health', (req, res) => {
