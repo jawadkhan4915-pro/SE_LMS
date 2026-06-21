@@ -33,6 +33,7 @@ import SessionalMarksTeacher from './pages/SessionalMarksTeacher';
 import HODEnrollmentApproval from './pages/HODEnrollmentApproval';
 import OnlineLectures from './pages/OnlineLectures';
 import LectureRoom from './pages/LectureRoom';
+import Timetable from './pages/Timetable';
 
 // Admin / HOD Pages
 import ManageUsers from './pages/ManageUsers';
@@ -85,6 +86,16 @@ function App() {
             
             {/* Online Lectures List */}
             <Route path="lectures" element={<OnlineLectures />} />
+
+            {/* Timetable View */}
+            <Route 
+              path="timetable" 
+              element={
+                <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
+                  <Timetable />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Student specific metrics */}
             <Route 

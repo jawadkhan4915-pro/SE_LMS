@@ -17,7 +17,8 @@ import {
   ChevronRight,
   CreditCard,
   CheckSquare,
-  Video
+  Video,
+  Calendar
 } from 'lucide-react';
 
 const roleColors = {
@@ -56,6 +57,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/results', label: 'Transcript & Results', icon: GraduationCap },
           { path: '/slips', label: 'Slips & Vouchers', icon: CreditCard },
           { path: '/lectures', label: 'Online Lectures', icon: Video },
+          { path: '/timetable', label: 'Class Timetable', icon: Calendar },
         ];
       case 'teacher':
         return [
@@ -67,6 +69,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/sessional/manage', label: 'Sessional Marks', icon: CheckSquare },
           { path: '/results/upload', label: 'Manage Exam Results', icon: GraduationCap },
           { path: '/lectures', label: 'Online Lectures', icon: Video },
+          { path: '/timetable', label: 'Class Timetable', icon: Calendar },
         ];
       case 'hod':
         return [
@@ -82,6 +85,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
           { path: '/admin/users', label: 'Manage Users', icon: Users },
           { path: '/admin/courses', label: 'Manage Courses', icon: BookOpen },
+          { path: '/timetable', label: 'Manage Timetable', icon: Calendar },
           { path: '/hod/enrollments', label: 'Enrollment Approvals', icon: Users }, // Admins can also approve
           { path: '/notices', label: 'Notice Board', icon: Megaphone },
           { path: '/resources', label: 'Resources', icon: FolderOpen },

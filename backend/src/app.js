@@ -22,9 +22,11 @@ const resultRoutes = require('./routes/resultRoutes');
 const sessionalRoutes = require('./routes/sessionalRoutes');
 const slipRoutes = require('./routes/slipRoutes');
 const onlineLectureRoutes = require('./routes/onlineLectureRoutes');
+const timetableRoutes = require('./routes/timetableRoutes');
 
 // Initialize app
 const app = express();
+
 
 // Connect to Database
 connectDB();
@@ -70,6 +72,7 @@ app.use('/api/results', resultRoutes);
 app.use('/api/sessional', sessionalRoutes);
 app.use('/api/slips', slipRoutes);
 app.use('/api/lectures', onlineLectureRoutes);
+app.use('/api/timetable', timetableRoutes);
 
 // Root route status check
 app.get('/health', (req, res) => {
