@@ -18,7 +18,8 @@ import {
   CreditCard,
   CheckSquare,
   Video,
-  Calendar
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 
 const roleColors = {
@@ -41,6 +42,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const getLinksByRole = () => {
     const common = [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
       { path: '/notices', label: 'Notice Board', icon: Megaphone },
       { path: '/resources', label: 'Resources', icon: FolderOpen },
     ];
@@ -74,6 +76,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       case 'hod':
         return [
           { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
           { path: '/hod/analytics', label: 'Analytics', icon: BarChart3 },
           { path: '/hod/enrollments', label: 'Enrollment Approvals', icon: Users },
           { path: '/courses', label: 'View Courses', icon: BookOpen },
@@ -86,6 +89,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/admin/users', label: 'Manage Users', icon: Users },
           { path: '/admin/courses', label: 'Manage Courses', icon: BookOpen },
           { path: '/timetable', label: 'Manage Timetable', icon: Calendar },
+          { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
           { path: '/hod/enrollments', label: 'Enrollment Approvals', icon: Users }, // Admins can also approve
           { path: '/notices', label: 'Notice Board', icon: Megaphone },
           { path: '/resources', label: 'Resources', icon: FolderOpen },

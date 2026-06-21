@@ -5,11 +5,14 @@ const {
   updateTimetableEntry,
   deleteTimetableEntry,
   getTimetable,
-  getFreeClassrooms
+  getFreeClassrooms,
+  generateAutoTimetable
 } = require('../controllers/timetableController');
 const { protect, authorizeRoles } = require('../middlewares/auth');
 
 router.use(protect); // All routes require auth
+
+router.post('/generate-auto', authorizeRoles('admin'), generateAutoTimetable);
 
 router.route('/')
   .get(getTimetable)

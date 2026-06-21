@@ -34,6 +34,7 @@ import HODEnrollmentApproval from './pages/HODEnrollmentApproval';
 import OnlineLectures from './pages/OnlineLectures';
 import LectureRoom from './pages/LectureRoom';
 import Timetable from './pages/Timetable';
+import AIAssistant from './pages/AIAssistant';
 
 // Admin / HOD Pages
 import ManageUsers from './pages/ManageUsers';
@@ -93,6 +94,16 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
                   <Timetable />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* AI Assistant Chatbot */}
+            <Route 
+              path="ai-assistant" 
+              element={
+                <ProtectedRoute allowedRoles={['student', 'teacher', 'admin', 'hod']}>
+                  <AIAssistant />
                 </ProtectedRoute>
               } 
             />
