@@ -2,6 +2,7 @@ const Timetable = require('../models/timetable');
 const Course = require('../models/course');
 const User = require('../models/user');
 const Enrollment = require('../models/enrollment');
+const { solveTimetable } = require('../utils/scheduler');
 
 // Predefined classrooms in the department
 const CLASSROOMS = ['Room 101', 'Room 102', 'Room 103', 'Room 104', 'Lab 1', 'Lab 2', 'Seminar Room'];
@@ -325,3 +326,35 @@ exports.getFreeClassrooms = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Automatically generate a weekly conflict-free timetable
+// @route   POST /api/timetable/generate-auto
+// @access  Private/Admin
+exports.generateAutoTimetable = async (req, res) => {
+  try {
+    // 1. Solve schedule allocations
+    const solvedSlots = await solveTimetable();
+
+    // 2. Wipe the existing database collection
+    await Timetable.deleteMany({});
+
+    // 3. Save all solved slots
+    const savedEntries = await Timetable.insertMany(solvedSlots);
+
+    // 4. Populate details to return a nice summary to the client
+    const populated = await Timetable.find({})
+      .populate('course', 'name code category creditHours')
+      .populate('teacher', 'name email')
+      .sort({ day: 1, startTime: 1 });
+
+    res.json({
+      success: true,
+      message: `Successfully cleared the existing schedule and auto-generated ${savedEntries.length} conflict-free course slots!`,
+      count: savedEntries.length,
+      data: populated
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
