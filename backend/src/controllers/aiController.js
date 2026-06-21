@@ -20,7 +20,7 @@ Here is the current logged-in user details:
   try {
     if (user.role === 'student') {
       // Fetch student courses
-      const enrollments = await Enrollment.find({ student: user._id, approvalStatus: 'approved', status: 'active' })
+      const enrollments = await Enrollment.find({ student: user._id })
         .populate('course');
       const coursesInfo = enrollments
         .map(e => `- ${e.course?.code || 'Code'}: ${e.course?.name || 'Name'} (Credits: ${e.course?.creditHours || 3})`)

@@ -229,14 +229,14 @@ exports.deleteTimetableEntry = async (req, res) => {
 // @access  Private
 exports.getTimetable = async (req, res) => {
   const { role, id } = req.user;
-  const { semester, teacherId, classroom } = req.query;
+  const { semester, teacherId, classroom, studentId } = req.query;
 
   try {
     let query = {};
 
     if (role === 'student') {
       // Student: view only classes of enrolled courses
-      const enrollments = await Enrollment.find({ student: id, approvalStatus: 'approved', status: 'active' }).select('course');
+      const enrollments = await Enrollment.find({ student: req.user.id }).select('course');
       const courseIds = enrollments.map(e => e.course);
       query = { course: { $in: courseIds } };
     } else if (role === 'teacher') {
@@ -253,7 +253,7 @@ exports.getTimetable = async (req, res) => {
         query = { teacher: id };
       }
     } else if (role === 'admin' || role === 'hod') {
-      // Admin/HOD filters: teacherId, semester, or classroom. Or get all.
+      // Admin/HOD filters: teacherId, semester, classroom, or studentId. Or get all.
       if (teacherId) {
         query.teacher = teacherId;
       }
@@ -262,6 +262,11 @@ exports.getTimetable = async (req, res) => {
       }
       if (classroom) {
         query.classroom = classroom;
+      }
+      if (studentId) {
+        const enrollments = await Enrollment.find({ student: studentId }).select('course');
+        const courseIds = enrollments.map(e => e.course);
+        query.course = { $in: courseIds };
       }
     }
 

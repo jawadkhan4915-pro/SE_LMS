@@ -42,6 +42,8 @@ const Timetable = () => {
   // Options loaded from backend (for Admin dropdowns)
   const [allCourses, setAllCourses] = useState([]);
   const [allTeachers, setAllTeachers] = useState([]);
+  const [allStudents, setAllStudents] = useState([]);
+  const [selectedStudentId, setSelectedStudentId] = useState('');
 
   // Admin View toggles: 'schedule' (CRUD & view) or 'free-rooms' (analyzer)
   const [currentView, setCurrentView] = useState('schedule');
@@ -86,6 +88,7 @@ const Timetable = () => {
         if (selectedSemester) params.semester = selectedSemester;
         if (selectedTeacherId) params.teacherId = selectedTeacherId;
         if (selectedClassroom) params.classroom = selectedClassroom;
+        if (selectedStudentId) params.studentId = selectedStudentId;
       }
 
       const res = await api.get(url, { params });
@@ -116,10 +119,13 @@ const Timetable = () => {
         setTeacherSemesters(uniqueSemesters);
       }
 
-      // 3. If admin, fetch teacher list
+      // 3. If admin, fetch teacher and student lists
       if (userRole === 'admin' || userRole === 'hod') {
         const teacherRes = await api.get('/users', { params: { role: 'teacher', limit: 100 } });
         setAllTeachers(teacherRes.data.data || []);
+
+        const studentRes = await api.get('/users', { params: { role: 'student', limit: 100 } });
+        setAllStudents(studentRes.data.data || []);
       }
     } catch (err) {
       console.error(err);
@@ -130,7 +136,7 @@ const Timetable = () => {
   useEffect(() => {
     fetchTimetable();
     fetchAdminOptions();
-  }, [userRole, selectedSemester, selectedTeacherId, selectedClassroom]);
+  }, [userRole, selectedSemester, selectedTeacherId, selectedClassroom, selectedStudentId]);
 
   // Run analyzer when filters change
   const runAnalyzer = async () => {
@@ -375,16 +381,35 @@ const Timetable = () => {
                 {/* Classroom filter (For Admin only) */}
                 {(userRole === 'admin' || userRole === 'hod') && (
                   <div className="flex flex-col min-w-[140px] flex-1 md:flex-none">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-1">Classroom</label>
+                     <label className="text-[10px] font-bold text-slate-400 uppercase mb-1">Classroom</label>
+                     <select
+                       className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
+                       value={selectedClassroom}
+                       onChange={(e) => setSelectedClassroom(e.target.value)}
+                     >
+                       <option value="">All Classrooms</option>
+                       {CLASSROOMS.map((room) => (
+                         <option key={room} value={room}>
+                           {room}
+                         </option>
+                       ))}
+                     </select>
+                  </div>
+                )}
+
+                {/* Student filter (For Admin only) */}
+                {(userRole === 'admin' || userRole === 'hod') && (
+                  <div className="flex flex-col min-w-[180px] flex-1 md:flex-none">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-1">Student</label>
                     <select
                       className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
-                      value={selectedClassroom}
-                      onChange={(e) => setSelectedClassroom(e.target.value)}
+                      value={selectedStudentId}
+                      onChange={(e) => setSelectedStudentId(e.target.value)}
                     >
-                      <option value="">All Classrooms</option>
-                      {CLASSROOMS.map((room) => (
-                        <option key={room} value={room}>
-                          {room}
+                      <option value="">All Students</option>
+                      {allStudents.map((s) => (
+                        <option key={s._id} value={s._id}>
+                          {s.name} (Sem {s.semester})
                         </option>
                       ))}
                     </select>
@@ -392,12 +417,13 @@ const Timetable = () => {
                 )}
 
                 {/* Reset filters */}
-                {(selectedSemester || selectedTeacherId || selectedClassroom) && (
+                {(selectedSemester || selectedTeacherId || selectedClassroom || selectedStudentId) && (
                   <button
                     onClick={() => {
                       setSelectedSemester('');
                       setSelectedTeacherId('');
                       setSelectedClassroom('');
+                      setSelectedStudentId('');
                     }}
                     className="self-end px-3 py-2 border border-slate-200 text-xs text-slate-500 hover:text-indigo-600 rounded-xl hover:bg-slate-50 font-medium transition-all"
                   >
