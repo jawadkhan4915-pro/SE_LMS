@@ -29,6 +29,12 @@ const UserSchema = new mongoose.Schema({
     type: Number, 
     required: function() { return this.role === 'student'; } // Required only for students
   },
+  section: {
+    type: String,
+    enum: ['A', 'B', 'C'],
+    required: function() { return this.role === 'student'; }, // Required only for students
+    default: function() { return this.role === 'student' ? 'A' : undefined; }
+  },
   profilePicture: { 
     type: String, 
     default: '' 

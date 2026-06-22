@@ -64,7 +64,7 @@ exports.getUserById = async (req, res) => {
 // @route   POST /api/users
 // @access  Private/Admin
 exports.createUser = async (req, res) => {
-  const { name, email, password, role, semester, phone } = req.body;
+  const { name, email, password, role, semester, section, phone } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -78,6 +78,7 @@ exports.createUser = async (req, res) => {
       password,
       role,
       semester: role === 'student' ? semester : undefined,
+      section: role === 'student' ? section : undefined,
       phone
     });
 
@@ -89,6 +90,7 @@ exports.createUser = async (req, res) => {
         email: user.email,
         role: user.role,
         semester: user.semester,
+        section: user.section,
         phone: user.phone
       }
     });

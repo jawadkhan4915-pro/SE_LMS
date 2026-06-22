@@ -20,6 +20,13 @@ const TimetableSchema = new mongoose.Schema({
     max: [8, 'Semester must be between 1 and 8'],
     index: true
   },
+  section: {
+    type: String,
+    enum: ['A', 'B', 'C'],
+    required: [true, 'Section is required'],
+    default: 'A',
+    index: true
+  },
   day: {
     type: String,
     required: [true, 'Day is required'],

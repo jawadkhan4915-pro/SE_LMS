@@ -26,7 +26,7 @@ const checkTimeOverlap = (start1, end1, start2, end2) => {
 };
 
 // Helper to check for timetable conflicts
-const checkConflicts = async ({ day, startTime, endTime, classroom, teacher, semester, excludeId }) => {
+const checkConflicts = async ({ day, startTime, endTime, classroom, teacher, semester, section, excludeId }) => {
   const query = { day };
   if (excludeId) {
     query._id = { $ne: excludeId };
@@ -53,12 +53,12 @@ const checkConflicts = async ({ day, startTime, endTime, classroom, teacher, sem
           message: `Teacher is already scheduled to teach "${slot.course?.name || 'another course'}" (${slot.startTime} - ${slot.endTime})`
         };
       }
-      // 3. Semester Conflict
-      if (slot.semester === Number(semester)) {
+      // 3. Semester Conflict (Specific to Section)
+      if (slot.semester === Number(semester) && slot.section === section) {
         return {
           conflict: true,
           type: 'semester',
-          message: `Semester ${semester} already has a class scheduled: "${slot.course?.name || 'another course'}" (${slot.startTime} - ${slot.endTime})`
+          message: `Semester ${semester} (Section ${section}) already has a class scheduled: "${slot.course?.name || 'another course'}" (${slot.startTime} - ${slot.endTime})`
         };
       }
     }
@@ -71,7 +71,7 @@ const checkConflicts = async ({ day, startTime, endTime, classroom, teacher, sem
 // @route   POST /api/timetable
 // @access  Private/Admin
 exports.createTimetableEntry = async (req, res) => {
-  const { courseId, day, startTime, endTime, classroom } = req.body;
+  const { courseId, day, startTime, endTime, classroom, section } = req.body;
 
   try {
     // Validate required fields
@@ -95,6 +95,8 @@ exports.createTimetableEntry = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
+    const targetSection = section || 'A';
+
     // Conflict detection
     const conflictResult = await checkConflicts({
       day,
@@ -102,7 +104,8 @@ exports.createTimetableEntry = async (req, res) => {
       endTime,
       classroom,
       teacher: course.teacher,
-      semester: course.semester
+      semester: course.semester,
+      section: targetSection
     });
 
     if (conflictResult.conflict) {
@@ -118,6 +121,7 @@ exports.createTimetableEntry = async (req, res) => {
       course: courseId,
       teacher: course.teacher,
       semester: course.semester,
+      section: targetSection,
       day,
       startTime,
       endTime,
