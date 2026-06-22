@@ -26,6 +26,7 @@ const ManageUsers = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [semester, setSemester] = useState('1');
+  const [section, setSection] = useState('A');
   const [phone, setPhone] = useState('');
 
   const showMsg = (text) => { setMessage(text); setTimeout(() => setMessage(''), 3000); };
@@ -50,10 +51,11 @@ const ManageUsers = () => {
     try {
       await api.post('/users', {
         name, email, password, role, phone,
-        semester: role === 'student' ? Number(semester) : undefined
+        semester: role === 'student' ? Number(semester) : undefined,
+        section: role === 'student' ? section : undefined
       });
       showMsg('User registered successfully!');
-      setName(''); setEmail(''); setPassword(''); setPhone(''); setIsOpen(false);
+      setName(''); setEmail(''); setPassword(''); setPhone(''); setSection('A'); setIsOpen(false);
       fetchUsers();
     } catch (e) { alert(e.response?.data?.message || 'Failed to create user'); }
   };
@@ -153,8 +155,8 @@ const ManageUsers = () => {
                   <td className="table-td">
                     <span className={roleBadge[u.role] || 'badge-gray'}>{u.role}</span>
                   </td>
-                  <td className="table-td text-slate-500 text-xs">
-                    {u.role === 'student' ? `Semester ${u.semester}` : u.phone || '—'}
+                  <td className="table-td text-slate-550 text-xs">
+                    {u.role === 'student' ? `Semester ${u.semester} (Sec ${u.section || 'A'})` : u.phone || '—'}
                   </td>
                   <td className="table-td">
                     <button
@@ -238,12 +240,20 @@ const ManageUsers = () => {
                   </select>
                 </div>
                 {role === 'student' && (
-                  <div>
-                    <label className="form-label">Semester</label>
-                    <select className="form-select" value={semester} onChange={e => setSemester(e.target.value)}>
-                      {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
-                    </select>
-                  </div>
+                  <>
+                    <div>
+                      <label className="form-label">Semester</label>
+                      <select className="form-select" value={semester} onChange={e => setSemester(e.target.value)}>
+                        {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="form-label">Section</label>
+                      <select className="form-select" value={section} onChange={e => setSection(e.target.value)}>
+                        {['A', 'B', 'C'].map(sec => <option key={sec} value={sec}>Section {sec}</option>)}
+                      </select>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

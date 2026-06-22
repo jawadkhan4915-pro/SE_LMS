@@ -37,13 +37,12 @@ const Timetable = () => {
   const [selectedSemester, setSelectedSemester] = useState('');
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
   const [selectedClassroom, setSelectedClassroom] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
   const [teacherSemesters, setTeacherSemesters] = useState([]); // Semesters where teacher teaches
 
   // Options loaded from backend (for Admin dropdowns)
   const [allCourses, setAllCourses] = useState([]);
   const [allTeachers, setAllTeachers] = useState([]);
-  const [allStudents, setAllStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
 
   // Admin View toggles: 'schedule' (CRUD & view) or 'free-rooms' (analyzer)
   const [currentView, setCurrentView] = useState('schedule');
@@ -63,6 +62,7 @@ const Timetable = () => {
   const [formStartTime, setFormStartTime] = useState('09:00');
   const [formEndTime, setFormEndTime] = useState('10:30');
   const [formClassroom, setFormClassroom] = useState('Room 101');
+  const [formSection, setFormSection] = useState('A');
   const [formError, setFormError] = useState('');
 
   // Auto-clear feedback alerts
@@ -84,11 +84,14 @@ const Timetable = () => {
         if (selectedSemester) {
           params.semester = selectedSemester;
         }
+        if (selectedSection) {
+          params.section = selectedSection;
+        }
       } else if (userRole === 'admin' || userRole === 'hod') {
         if (selectedSemester) params.semester = selectedSemester;
         if (selectedTeacherId) params.teacherId = selectedTeacherId;
         if (selectedClassroom) params.classroom = selectedClassroom;
-        if (selectedStudentId) params.studentId = selectedStudentId;
+        if (selectedSection) params.section = selectedSection;
       }
 
       const res = await api.get(url, { params });
@@ -119,13 +122,10 @@ const Timetable = () => {
         setTeacherSemesters(uniqueSemesters);
       }
 
-      // 3. If admin, fetch teacher and student lists
+      // 3. If admin, fetch teacher list
       if (userRole === 'admin' || userRole === 'hod') {
         const teacherRes = await api.get('/users', { params: { role: 'teacher', limit: 100 } });
         setAllTeachers(teacherRes.data.data || []);
-
-        const studentRes = await api.get('/users', { params: { role: 'student', limit: 100 } });
-        setAllStudents(studentRes.data.data || []);
       }
     } catch (err) {
       console.error(err);
@@ -136,7 +136,7 @@ const Timetable = () => {
   useEffect(() => {
     fetchTimetable();
     fetchAdminOptions();
-  }, [userRole, selectedSemester, selectedTeacherId, selectedClassroom, selectedStudentId]);
+  }, [userRole, selectedSemester, selectedTeacherId, selectedClassroom, selectedSection]);
 
   // Run analyzer when filters change
   const runAnalyzer = async () => {
@@ -174,6 +174,7 @@ const Timetable = () => {
     setFormStartTime('08:30');
     setFormEndTime('10:00');
     setFormClassroom('Room 101');
+    setFormSection('A');
     setFormError('');
     setModalOpen(true);
   };
@@ -186,6 +187,7 @@ const Timetable = () => {
     setFormStartTime(entry.startTime);
     setFormEndTime(entry.endTime);
     setFormClassroom(entry.classroom);
+    setFormSection(entry.section || 'A');
     setFormError('');
     setModalOpen(true);
   };
@@ -205,7 +207,8 @@ const Timetable = () => {
       day: formDay,
       startTime: formStartTime,
       endTime: formEndTime,
-      classroom: formClassroom
+      classroom: formClassroom,
+      section: formSection
     };
 
     try {
@@ -397,19 +400,19 @@ const Timetable = () => {
                   </div>
                 )}
 
-                {/* Student filter (For Admin only) */}
-                {(userRole === 'admin' || userRole === 'hod') && (
-                  <div className="flex flex-col min-w-[180px] flex-1 md:flex-none">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-1">Student</label>
+                {/* Section filter (For Admins, HODs, Teachers) */}
+                {(userRole === 'admin' || userRole === 'hod' || userRole === 'teacher') && (
+                  <div className="flex flex-col min-w-[140px] flex-1 md:flex-none">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-1">Section</label>
                     <select
                       className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
-                      value={selectedStudentId}
-                      onChange={(e) => setSelectedStudentId(e.target.value)}
+                      value={selectedSection}
+                      onChange={(e) => setSelectedSection(e.target.value)}
                     >
-                      <option value="">All Students</option>
-                      {allStudents.map((s) => (
-                        <option key={s._id} value={s._id}>
-                          {s.name} (Sem {s.semester})
+                      <option value="">All Sections</option>
+                      {['A', 'B', 'C'].map((sec) => (
+                        <option key={sec} value={sec}>
+                          Section {sec}
                         </option>
                       ))}
                     </select>
@@ -417,13 +420,13 @@ const Timetable = () => {
                 )}
 
                 {/* Reset filters */}
-                {(selectedSemester || selectedTeacherId || selectedClassroom || selectedStudentId) && (
+                {(selectedSemester || selectedTeacherId || selectedClassroom || selectedSection) && (
                   <button
                     onClick={() => {
                       setSelectedSemester('');
                       setSelectedTeacherId('');
                       setSelectedClassroom('');
-                      setSelectedStudentId('');
+                      setSelectedSection('');
                     }}
                     className="self-end px-3 py-2 border border-slate-200 text-xs text-slate-500 hover:text-indigo-600 rounded-xl hover:bg-slate-50 font-medium transition-all"
                   >
@@ -511,7 +514,7 @@ const Timetable = () => {
                                 </span>
                               )}
                               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-150">
-                                Semester {slot.semester}
+                                Semester {slot.semester} (Sec {slot.section || 'A'})
                               </span>
                             </div>
                           </div>
@@ -842,6 +845,23 @@ const Timetable = () => {
                     {CLASSROOMS.map((room) => (
                       <option key={room} value={room}>
                         {room}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Section Selection */}
+                <div>
+                  <label className="text-xs font-bold text-slate-550 block mb-1.5">Select Section</label>
+                  <select
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-indigo-500"
+                    value={formSection}
+                    onChange={(e) => setFormSection(e.target.value)}
+                    required
+                  >
+                    {['A', 'B', 'C'].map((sec) => (
+                      <option key={sec} value={sec}>
+                        Section {sec}
                       </option>
                     ))}
                   </select>

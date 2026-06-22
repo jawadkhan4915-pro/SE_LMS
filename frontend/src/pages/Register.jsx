@@ -137,12 +137,20 @@ const Register = () => {
                 </select>
               </div>
               {role === 'student' && (
-                <div>
-                  <label className="form-label">Semester</label>
-                  <select className="form-select" value={semester} onChange={e => setSemester(e.target.value)}>
-                    {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
-                  </select>
-                </div>
+                <>
+                  <div>
+                    <label className="form-label">Semester</label>
+                    <select className="form-select" value={semester} onChange={e => setSemester(e.target.value)}>
+                      {[1,2,3,4,5,6,7,8].map(s => <option key={s} value={s}>Semester {s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">Section</label>
+                    <select className="form-select" value={section} onChange={e => setSection(e.target.value)}>
+                      {['A', 'B', 'C'].map(sec => <option key={sec} value={sec}>Section {sec}</option>)}
+                    </select>
+                  </div>
+                </>
               )}
             </div>
 
