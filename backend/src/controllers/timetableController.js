@@ -142,7 +142,7 @@ exports.createTimetableEntry = async (req, res) => {
 // @route   PUT /api/timetable/:id
 // @access  Private/Admin
 exports.updateTimetableEntry = async (req, res) => {
-  const { courseId, day, startTime, endTime, classroom } = req.body;
+  const { courseId, day, startTime, endTime, classroom, section } = req.body;
 
   try {
     let entry = await Timetable.findById(req.params.id);
@@ -156,6 +156,7 @@ exports.updateTimetableEntry = async (req, res) => {
     const newDay = day || entry.day;
     const newClassroom = classroom || entry.classroom;
     const targetCourseId = courseId || entry.course;
+    const newSection = section || entry.section || 'A';
 
     if (!TIME_REGEX.test(newStartTime) || !TIME_REGEX.test(newEndTime)) {
       return res.status(400).json({ success: false, message: 'Times must be in HH:MM (24-hour) format' });
@@ -179,6 +180,7 @@ exports.updateTimetableEntry = async (req, res) => {
       classroom: newClassroom,
       teacher: course.teacher,
       semester: course.semester,
+      section: newSection,
       excludeId: entry._id
     });
 
@@ -194,6 +196,7 @@ exports.updateTimetableEntry = async (req, res) => {
     entry.course = targetCourseId;
     entry.teacher = course.teacher;
     entry.semester = course.semester;
+    entry.section = newSection;
     entry.day = newDay;
     entry.startTime = newStartTime;
     entry.endTime = newEndTime;
@@ -233,16 +236,20 @@ exports.deleteTimetableEntry = async (req, res) => {
 // @access  Private
 exports.getTimetable = async (req, res) => {
   const { role, id } = req.user;
-  const { semester, teacherId, classroom, studentId } = req.query;
+  const { semester, teacherId, classroom, studentId, section } = req.query;
 
   try {
     let query = {};
 
     if (role === 'student') {
-      // Student: view only classes of enrolled courses
+      // Student: view only classes of enrolled courses matching their assigned section
+      const studentUser = await User.findById(req.user.id);
       const enrollments = await Enrollment.find({ student: req.user.id }).select('course');
       const courseIds = enrollments.map(e => e.course);
-      query = { course: { $in: courseIds } };
+      query = { 
+        course: { $in: courseIds },
+        section: studentUser.section || 'A'
+      };
     } else if (role === 'teacher') {
       // Teacher: see their own schedule OR check semester schedules they teach
       if (semester) {
@@ -252,12 +259,18 @@ exports.getTimetable = async (req, res) => {
           return res.status(403).json({ success: false, message: 'You do not teach any course in this semester' });
         }
         query = { semester: Number(semester) };
+        if (section) {
+          query.section = section;
+        }
       } else {
         // Own schedule
         query = { teacher: id };
+        if (section) {
+          query.section = section;
+        }
       }
     } else if (role === 'admin' || role === 'hod') {
-      // Admin/HOD filters: teacherId, semester, classroom, or studentId. Or get all.
+      // Admin/HOD filters: teacherId, semester, classroom, section, or studentId. Or get all.
       if (teacherId) {
         query.teacher = teacherId;
       }
@@ -266,6 +279,9 @@ exports.getTimetable = async (req, res) => {
       }
       if (classroom) {
         query.classroom = classroom;
+      }
+      if (section) {
+        query.section = section;
       }
       if (studentId) {
         const enrollments = await Enrollment.find({ student: studentId }).select('course');

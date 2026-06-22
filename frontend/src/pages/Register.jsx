@@ -11,6 +11,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [semester, setSemester] = useState('1');
+  const [section, setSection] = useState('A');
   const [phone, setPhone] = useState('');
   const [localError, setLocalError] = useState('');
 
@@ -26,7 +27,8 @@ const Register = () => {
     try {
       const r = await api.post('/auth/register', {
         name, email, password, role, phone,
-        semester: role === 'student' ? Number(semester) : undefined
+        semester: role === 'student' ? Number(semester) : undefined,
+        section: role === 'student' ? section : undefined
       });
       dispatch(authSuccess(r.data.data));
       navigate('/dashboard');

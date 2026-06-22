@@ -22,15 +22,17 @@ const solveTimetable = async () => {
     throw new Error('No courses found in the database. Please add courses before generating a timetable.');
   }
 
-  // 2. Prepare allocations: Schedule 2 sessions per course (approx. 3 credit hours each)
+  // 2. Prepare allocations: Schedule 2 sessions per course per section (approx. 3 credit hours each)
   const allocations = [];
   
   // Sort courses by creditHours descending to prioritize hard-to-schedule courses
   const sortedCourses = [...courses].sort((a, b) => b.creditHours - a.creditHours);
   
   for (const course of sortedCourses) {
-    allocations.push({ course, session: 1 });
-    allocations.push({ course, session: 2 });
+    for (const section of ['A', 'B', 'C']) {
+      allocations.push({ course, session: 1, section });
+      allocations.push({ course, session: 2, section });
+    }
   }
 
   // 3. Track occupancies to prevent conflicts
@@ -54,7 +56,7 @@ const solveTimetable = async () => {
 
   // 4. Greedy Search Solver
   for (const alloc of allocations) {
-    const { course, session } = alloc;
+    const { course, session, section } = alloc;
     const courseId = course._id.toString();
     const teacherId = course.teacher?._id?.toString() || course.teacher?.toString();
     const semester = course.semester;
@@ -69,11 +71,20 @@ const solveTimetable = async () => {
       DAYS.forEach(day => { teacherOccupied[teacherId][day] = {}; });
     }
     if (!semesterOccupied[semester]) {
-      semesterOccupied[semester] = {};
-      DAYS.forEach(day => { semesterOccupied[semester][day] = {}; });
+      semesterOccupied[semester] = {
+        'A': {},
+        'B': {},
+        'C': {}
+      };
+      DAYS.forEach(day => {
+        semesterOccupied[semester]['A'][day] = {};
+        semesterOccupied[semester]['B'][day] = {};
+        semesterOccupied[semester]['C'][day] = {};
+      });
     }
-    if (!courseDays[courseId]) {
-      courseDays[courseId] = new Set();
+    const courseSecId = `${courseId}_${section}`;
+    if (!courseDays[courseSecId]) {
+      courseDays[courseSecId] = new Set();
     }
 
     let allocated = false;
@@ -87,8 +98,8 @@ const solveTimetable = async () => {
       for (const day of DAYS) {
         if (allocated) break;
 
-        // Skip day in Pass 1 if course already has a session scheduled on it
-        if (pass === 1 && courseDays[courseId].has(day)) {
+        // Skip day in Pass 1 if course already has a session scheduled on it for this section
+        if (pass === 1 && courseDays[courseSecId].has(day)) {
           continue;
         }
 
@@ -100,8 +111,8 @@ const solveTimetable = async () => {
           // Constraint A: Teacher must be free
           if (teacherOccupied[teacherId][day][slotTime]) continue;
 
-          // Constraint B: Semester class must be free (no two classes for BSSE-4 at 8:30)
-          if (semesterOccupied[semester][day][slotTime]) continue;
+          // Constraint B: Semester section class must be free (no two classes for BSSE-4 Section A at 8:30)
+          if (semesterOccupied[semester][section][day][slotTime]) continue;
 
           // Constraint C: Find an unoccupied classroom
           for (const room of CLASSROOMS) {
@@ -110,13 +121,14 @@ const solveTimetable = async () => {
             // SUCCESS: All constraints satisfied! Allocate slot.
             classroomOccupied[room][day][slotTime] = true;
             teacherOccupied[teacherId][day][slotTime] = true;
-            semesterOccupied[semester][day][slotTime] = true;
-            courseDays[courseId].add(day);
+            semesterOccupied[semester][section][day][slotTime] = true;
+            courseDays[courseSecId].add(day);
 
             timetableEntries.push({
               course: course._id,
               teacher: course.teacher?._id || course.teacher,
               semester: course.semester,
+              section,
               day,
               startTime: slot.startTime,
               endTime: slot.endTime,
