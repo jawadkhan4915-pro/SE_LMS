@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../utils/api';
@@ -20,7 +20,10 @@ import {
   Send,
   Trash2,
   Lock,
-  Compass
+  Compass,
+  Monitor,
+  MonitorOff,
+  MonitorPlay
 } from 'lucide-react';
 
 const SLIDE_DECK = [
@@ -81,8 +84,9 @@ const LectureRoom = () => {
   // Classroom status
   const [lecture, setLecture] = useState(null);
   const [isActive, setIsActive] = useState(false);
-  const [activeTab, setActiveTab] = useState('chat'); // chat or participants
-  const [centerMode, setCenterMode] = useState('slides'); // whiteboard or slides
+  const [activeTab, setActiveTab] = useState('chat');
+  // centerMode: 'slides' | 'whiteboard' | 'screenshare'
+  const [centerMode, setCenterMode] = useState('slides');
 
   // Media streams
   const [cameraActive, setCameraActive] = useState(true);
@@ -90,6 +94,13 @@ const LectureRoom = () => {
   const [handRaised, setHandRaised] = useState(false);
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
+
+  // Screen Share state
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const screenCanvasRef = useRef(null);
+  const screenFrameIntervalRef = useRef(null);
+  const [screenShareFrame, setScreenShareFrame] = useState(''); // for student view
 
   // Synchronized States
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -238,23 +249,141 @@ const LectureRoom = () => {
     }
   };
 
-  // 4. Synchronization (Polling)
+  // ─── SCREEN SHARING ──────────────────────────────────────────────────────────
+
+  // Capture a frame from screen stream and relay to backend
+  const captureAndRelayFrame = useCallback(async () => {
+    if (!screenStreamRef.current || !screenCanvasRef.current) return;
+    const video = screenStreamRef.current.getVideoTracks()[0];
+    if (!video || video.readyState !== 'live') return;
+
+    const settings = video.getSettings();
+    const w = settings.width || 1280;
+    const h = settings.height || 720;
+
+    const canvas = screenCanvasRef.current;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    // Draw the current video frame onto canvas
+    const videoEl = document.getElementById('screen-share-video-capture');
+    if (!videoEl) return;
+    try {
+      ctx.drawImage(videoEl, 0, 0, w, h);
+      // Convert to compressed JPEG (quality 0.35 keeps size small for polling)
+      const frame = canvas.toDataURL('image/jpeg', 0.35);
+      await api.put(`/lectures/${meetingId}/state`, { screenShareFrame: frame });
+    } catch (e) {
+      // Ignore draw errors (e.g., frame not ready yet)
+    }
+  }, [meetingId]);
+
+  const startScreenShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 5, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+
+      screenStreamRef.current = stream;
+      setIsScreenSharing(true);
+
+      // Switch teacher view & broadcast mode to students
+      setCenterMode('screenshare');
+      await api.put(`/lectures/${meetingId}/state`, { activeMode: 'screenshare' });
+
+      // Attach stream to hidden video element so we can canvas-capture it
+      const videoEl = document.getElementById('screen-share-video-capture');
+      if (videoEl) {
+        videoEl.srcObject = stream;
+        await videoEl.play().catch(() => {});
+      }
+
+      // Start frame relay interval (every 600ms)
+      screenFrameIntervalRef.current = setInterval(captureAndRelayFrame, 600);
+
+      // Auto-stop when user clicks browser's "Stop sharing"
+      stream.getVideoTracks()[0].addEventListener('ended', () => {
+        stopScreenShare();
+      });
+    } catch (err) {
+      if (err.name !== 'NotAllowedError') {
+        console.error('Screen share error:', err);
+      }
+    }
+  };
+
+  const stopScreenShare = async () => {
+    // Stop interval
+    if (screenFrameIntervalRef.current) {
+      clearInterval(screenFrameIntervalRef.current);
+      screenFrameIntervalRef.current = null;
+    }
+
+    // Stop all tracks
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(t => t.stop());
+      screenStreamRef.current = null;
+    }
+
+    const videoEl = document.getElementById('screen-share-video-capture');
+    if (videoEl) {
+      videoEl.srcObject = null;
+    }
+
+    setIsScreenSharing(false);
+    setCenterMode('slides');
+
+    // Clear frame & revert mode on backend
+    try {
+      await api.put(`/lectures/${meetingId}/state`, {
+        screenShareFrame: '',
+        activeMode: 'slides'
+      });
+    } catch (e) {
+      console.error('Failed to stop screen share state:', e);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (screenFrameIntervalRef.current) clearInterval(screenFrameIntervalRef.current);
+      if (screenStreamRef.current) screenStreamRef.current.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  // ─── POLLING ─────────────────────────────────────────────────────────────────
+
   const pollLectureState = async () => {
     if (!isVerified) return;
     try {
       const res = await api.get(`/lectures/${meetingId}/state`);
-      const { isActive: live, currentSlide: slide, chatMessages: chats, participants: parts, whiteboardData: board } = res.data.data;
+      const {
+        isActive: live,
+        currentSlide: slide,
+        chatMessages: chats,
+        participants: parts,
+        whiteboardData: board,
+        activeMode: mode,
+        screenShareFrame: frame
+      } = res.data.data;
       
       setIsActive(live);
       setChatMessages(chats);
       setParticipants(parts);
       
-      // Sync slide index for students
+      // Students always follow teacher's active mode
       if (!isTeacher) {
         setCurrentSlide(slide);
+        // Sync the center mode from backend (this is the whiteboard sync fix)
+        if (mode) setCenterMode(mode);
+        // Sync screen share frame for student display
+        if (frame !== undefined) setScreenShareFrame(frame);
       }
 
-      // Sync Whiteboard paths (only parse if whiteboard data is different)
+      // Sync Whiteboard paths for both teacher and student
       try {
         const parsedPaths = JSON.parse(board);
         setWhiteboardPaths(parsedPaths);
@@ -269,25 +398,23 @@ const LectureRoom = () => {
   useEffect(() => {
     if (!isVerified) return;
 
-    // Run immediately and poll every 2.5 seconds
     pollLectureState();
     const interval = setInterval(pollLectureState, 2500);
 
     return () => clearInterval(interval);
   }, [isVerified]);
 
-  // 5. Drawing canvas lifecycle
+  // ─── WHITEBOARD ───────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (centerMode !== 'whiteboard' || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    // Make canvas display crisp on high DPI screens
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
 
-    // Draw all paths in whiteboardPaths list
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     whiteboardPaths.forEach(path => {
       if (path.points.length < 2) return;
@@ -297,7 +424,6 @@ const LectureRoom = () => {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      // Map percentages back to current canvas dimensions
       const startX = path.points[0].x * canvas.width;
       const startY = path.points[0].y * canvas.height;
       ctx.moveTo(startX, startY);
@@ -316,7 +442,6 @@ const LectureRoom = () => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     
-    // Support mouse and touch
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -341,7 +466,6 @@ const LectureRoom = () => {
     
     drawingPathRef.current.push(coords);
 
-    // Render immediately on teacher screen
     ctx.beginPath();
     ctx.strokeStyle = isEraser ? '#ffffff' : drawColor;
     ctx.lineWidth = brushSize;
@@ -361,7 +485,6 @@ const LectureRoom = () => {
 
     if (drawingPathRef.current.length < 2) return;
 
-    // Push new path to current list
     const newPath = {
       points: drawingPathRef.current,
       color: drawColor,
@@ -372,7 +495,6 @@ const LectureRoom = () => {
     const updatedPaths = [...whiteboardPaths, newPath];
     setWhiteboardPaths(updatedPaths);
 
-    // Save state to backend
     try {
       await api.put(`/lectures/${meetingId}/state`, {
         whiteboardData: JSON.stringify(updatedPaths)
@@ -394,7 +516,28 @@ const LectureRoom = () => {
     }
   };
 
-  // 6. Interactive slide navigation (Teacher only)
+  // ─── MODE SWITCHING (Teacher) ─────────────────────────────────────────────────
+  // Teacher switches mode → update locally AND sync to backend so students follow
+  const handleSetMode = async (newMode) => {
+    // If switching away from screenshare, stop it first
+    if (isScreenSharing && newMode !== 'screenshare') {
+      await stopScreenShare();
+      return; // stopScreenShare already sets mode to 'slides'
+    }
+    if (newMode === 'screenshare') {
+      await startScreenShare();
+      return;
+    }
+    setCenterMode(newMode);
+    try {
+      await api.put(`/lectures/${meetingId}/state`, { activeMode: newMode });
+    } catch (e) {
+      console.error('Failed to sync mode:', e);
+    }
+  };
+
+  // ─── SLIDES ───────────────────────────────────────────────────────────────────
+
   const handleSlideChange = async (direction) => {
     if (!isTeacher) return;
     let nextSlide = currentSlide;
@@ -411,7 +554,8 @@ const LectureRoom = () => {
     }
   };
 
-  // 7. Send chat message
+  // ─── CHAT ────────────────────────────────────────────────────────────────────
+
   const handleSendChat = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -419,7 +563,6 @@ const LectureRoom = () => {
     const messageText = chatInput;
     setChatInput('');
 
-    // Pre-append to local state for fast UI response
     const tempMsg = {
       senderName: user.name,
       senderRole: user.role,
@@ -438,7 +581,6 @@ const LectureRoom = () => {
     }
   };
 
-  // Raise hand notification
   const handleRaiseHand = async () => {
     if (handRaised) return;
     setHandRaised(true);
@@ -453,7 +595,8 @@ const LectureRoom = () => {
     }
   };
 
-  // Close Meeting (Teacher ends class, Student leaves)
+  // ─── LEAVE / END ──────────────────────────────────────────────────────────────
+
   const handleLeaveMeeting = async () => {
     const confirmText = isTeacher 
       ? "Do you want to end this lecture for everyone?" 
@@ -462,6 +605,7 @@ const LectureRoom = () => {
     if (!window.confirm(confirmText)) return;
 
     if (isTeacher) {
+      if (isScreenSharing) await stopScreenShare();
       try {
         await api.put(`/lectures/${meetingId}/state`, { isActive: false });
       } catch (e) {
@@ -471,11 +615,11 @@ const LectureRoom = () => {
     navigate('/lectures');
   };
 
-  // --- Auth Verification Lock View ---
+  // ─── AUTH GATE ────────────────────────────────────────────────────────────────
+
   if (user?.role === 'student' && !isVerified) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Background Gradients */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl" />
 
@@ -496,11 +640,9 @@ const LectureRoom = () => {
             </div>
           )}
 
-          {/* Real Google Button Container */}
           <div className="mt-8 space-y-4">
             <div id="google-signin-btn" className="w-full min-h-[44px]" />
 
-            {/* Developer Mode/Simulated Input Trigger */}
             <div className="pt-4 border-t border-slate-800">
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider text-center mb-3">
                 Or Use Demonstration Login
@@ -541,10 +683,22 @@ const LectureRoom = () => {
     );
   }
 
-  // --- Main Classroom Fullscreen Interface ---
+  // ─── MAIN CLASSROOM UI ────────────────────────────────────────────────────────
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950 text-slate-100 flex flex-col h-screen w-screen overflow-hidden">
-      {/* 1. Header Bar */}
+
+      {/* Hidden elements for screen share capture */}
+      <video
+        id="screen-share-video-capture"
+        autoPlay
+        playsInline
+        muted
+        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: -9999 }}
+      />
+      <canvas ref={screenCanvasRef} style={{ display: 'none' }} />
+
+      {/* ── Header Bar ── */}
       <header className="h-16 border-b border-slate-900 bg-slate-900/60 backdrop-blur px-6 flex items-center justify-between flex-shrink-0 select-none">
         <div className="flex items-center gap-3">
           <button 
@@ -570,12 +724,12 @@ const LectureRoom = () => {
           </div>
         </div>
 
-        {/* Sync Controls (Teacher only) */}
+        {/* Mode Controls (Teacher only) */}
         <div className="flex items-center gap-2.5">
           {isTeacher && (
             <div className="p-1 bg-slate-950 rounded-xl border border-slate-850 flex items-center gap-1.5">
               <button 
-                onClick={() => setCenterMode('slides')}
+                onClick={() => handleSetMode('slides')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   centerMode === 'slides' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                 }`}
@@ -583,25 +737,51 @@ const LectureRoom = () => {
                 <Tv className="h-3.5 w-3.5" /> Presentation
               </button>
               <button 
-                onClick={() => setCenterMode('whiteboard')}
+                onClick={() => handleSetMode('whiteboard')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   centerMode === 'whiteboard' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <PenTool className="h-3.5 w-3.5" /> Whiteboard
               </button>
+              <button 
+                onClick={() => handleSetMode('screenshare')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  centerMode === 'screenshare'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Monitor className="h-3.5 w-3.5" /> Screen Share
+              </button>
             </div>
           )}
+
+          {/* Student status badge */}
           {!isTeacher && (
-            <div className="px-3 py-1.5 bg-indigo-950/40 border border-indigo-900/40 text-indigo-400 text-[10px] font-bold uppercase rounded-xl tracking-wider">
-              {centerMode === 'slides' ? '📺 Slides View synced' : '🎨 Whiteboard View synced'}
+            <div className={`px-3 py-1.5 border text-[10px] font-bold uppercase rounded-xl tracking-wider flex items-center gap-1.5 ${
+              centerMode === 'screenshare'
+                ? 'bg-emerald-950/40 border-emerald-900/40 text-emerald-400'
+                : centerMode === 'whiteboard'
+                ? 'bg-purple-950/40 border-purple-900/40 text-purple-400'
+                : 'bg-indigo-950/40 border-indigo-900/40 text-indigo-400'
+            }`}>
+              {centerMode === 'screenshare' && <MonitorPlay className="h-3.5 w-3.5" />}
+              {centerMode === 'whiteboard' && <PenTool className="h-3.5 w-3.5" />}
+              {centerMode === 'slides' && <Tv className="h-3.5 w-3.5" />}
+              {centerMode === 'screenshare'
+                ? 'Screen Share Live'
+                : centerMode === 'whiteboard'
+                ? 'Whiteboard View'
+                : 'Slides View Synced'}
             </div>
           )}
         </div>
       </header>
 
-      {/* 2. Middle Main Dashboard Panel */}
+      {/* ── Middle Dashboard ── */}
       <div className="flex-1 flex min-h-0 min-w-0">
+
         {/* A. Left Sidebar: Webcam Feeds */}
         <div className="w-[20%] max-w-[280px] bg-slate-950/80 border-r border-slate-900 flex flex-col p-4 gap-4 overflow-y-auto shrink-0 select-none">
           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Video Streams</div>
@@ -630,11 +810,10 @@ const LectureRoom = () => {
             </div>
           </div>
 
-          {/* Teacher or Alternate Stream (Simulated Classroom Roommate/Instructor) */}
+          {/* Teacher / Remote Stream */}
           <div className="relative aspect-video rounded-xl bg-slate-900 overflow-hidden border border-slate-800 shadow-inner group">
             {isActive ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-center p-3">
-                {/* Loop animation or placeholder */}
                 <div className="relative h-11 w-11 flex items-center justify-center bg-indigo-500/10 border border-indigo-500/20 rounded-full animate-bounce">
                   <Compass className="h-6 w-6 text-indigo-400" />
                 </div>
@@ -651,16 +830,31 @@ const LectureRoom = () => {
               {isTeacher ? 'Student Feeds' : `${lecture?.teacher?.name} (Instructor)`}
             </div>
           </div>
+
+          {/* Screen share indicator in sidebar */}
+          {isScreenSharing && (
+            <div className="rounded-xl bg-emerald-950/30 border border-emerald-900/50 p-3 flex flex-col items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Screen Live</span>
+              </div>
+              <button
+                onClick={stopScreenShare}
+                className="text-[9px] text-red-400 hover:text-red-300 font-semibold flex items-center gap-1 transition-colors"
+              >
+                <MonitorOff className="h-3 w-3" /> Stop Sharing
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* B. Center Area: Canvas Whiteboard / Slide Presentation */}
+        {/* B. Center Area */}
         <div className="flex-1 flex flex-col min-w-0 bg-slate-900/40 relative">
-          
-          {/* Main Whiteboard Canvas */}
-          <div className={`flex-1 relative min-h-0 flex flex-col ${centerMode === 'whiteboard' ? 'block' : 'hidden'}`}>
+
+          {/* ── Whiteboard Canvas ── */}
+          <div className={`flex-1 relative min-h-0 flex flex-col ${centerMode === 'whiteboard' ? 'flex' : 'hidden'}`}>
             {isTeacher && (
               <div className="absolute top-4 left-4 z-10 p-2 bg-slate-950/80 backdrop-blur border border-slate-850 rounded-xl flex items-center gap-3 shadow-lg select-none">
-                {/* Brush Colors */}
                 <div className="flex items-center gap-1.5 border-r border-slate-800 pr-3">
                   {['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'].map(color => (
                     <button 
@@ -673,7 +867,6 @@ const LectureRoom = () => {
                     />
                   ))}
                 </div>
-                {/* Mode Selectors */}
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => setIsEraser(false)}
@@ -701,6 +894,14 @@ const LectureRoom = () => {
               </div>
             )}
             
+            {/* Student notice on whiteboard */}
+            {!isTeacher && (
+              <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-purple-950/60 border border-purple-900/50 rounded-xl text-[10px] text-purple-300 font-semibold flex items-center gap-1.5">
+                <PenTool className="h-3 w-3" />
+                Teacher is drawing — whiteboard is read-only for students
+              </div>
+            )}
+
             <canvas 
               ref={canvasRef}
               onMouseDown={handleStartDraw}
@@ -716,11 +917,10 @@ const LectureRoom = () => {
             />
           </div>
 
-          {/* Presentation Deck Component */}
-          <div className={`flex-1 flex flex-col items-center justify-center p-6 md:p-12 ${centerMode === 'slides' ? 'block' : 'hidden'}`}>
+          {/* ── Slide Presentation ── */}
+          <div className={`flex-1 flex flex-col items-center justify-center p-6 md:p-12 ${centerMode === 'slides' ? 'flex' : 'hidden'}`}>
             <div className="w-full max-w-4xl bg-slate-950 border border-slate-850 rounded-2xl aspect-video shadow-2xl flex flex-col justify-between p-8 relative overflow-hidden select-none">
               
-              {/* Slides Grid Background */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
 
               <div className="flex justify-between items-start z-10">
@@ -744,7 +944,6 @@ const LectureRoom = () => {
                 </ul>
               </div>
 
-              {/* Slider Footer */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-900 z-10">
                 <p className="text-[10px] text-slate-500 font-semibold">{lecture?.course?.code} · {lecture?.course?.name}</p>
                 {isTeacher && (
@@ -768,12 +967,81 @@ const LectureRoom = () => {
               </div>
             </div>
           </div>
+
+          {/* ── Screen Share Panel ── */}
+          <div className={`flex-1 flex flex-col min-h-0 ${centerMode === 'screenshare' ? 'flex' : 'hidden'}`}>
+            {/* Teacher: shows live preview of what they're sharing */}
+            {isTeacher && (
+              <div className="flex-1 relative bg-black flex items-center justify-center">
+                <video
+                  id="screen-share-preview"
+                  autoPlay
+                  playsInline
+                  muted
+                  ref={el => {
+                    if (el && screenStreamRef.current && !el.srcObject) {
+                      el.srcObject = screenStreamRef.current;
+                    }
+                  }}
+                  className="max-w-full max-h-full object-contain"
+                />
+                {!isScreenSharing && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-950">
+                    <div className="h-20 w-20 rounded-2xl bg-emerald-950/30 border border-emerald-900/40 flex items-center justify-center">
+                      <Monitor className="h-10 w-10 text-emerald-500" />
+                    </div>
+                    <p className="text-slate-400 text-sm font-semibold">Screen share stopped</p>
+                    <button
+                      onClick={startScreenShare}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-2 transition-colors"
+                    >
+                      <Monitor className="h-4 w-4" /> Start Screen Share
+                    </button>
+                  </div>
+                )}
+                {isScreenSharing && (
+                  <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-emerald-950/80 border border-emerald-900/60 rounded-xl backdrop-blur">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">Broadcasting to Students</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Student: shows received frame from teacher */}
+            {!isTeacher && (
+              <div className="flex-1 relative bg-black flex items-center justify-center">
+                {screenShareFrame ? (
+                  <>
+                    <img
+                      src={screenShareFrame}
+                      alt="Teacher's shared screen"
+                      className="max-w-full max-h-full object-contain"
+                      style={{ imageRendering: 'crisp-edges' }}
+                    />
+                    <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-emerald-950/80 border border-emerald-900/60 rounded-xl backdrop-blur">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">Teacher's Screen — Live</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <div className="h-20 w-20 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center">
+                      <MonitorPlay className="h-10 w-10 text-slate-500" />
+                    </div>
+                    <p className="text-slate-500 text-sm font-semibold">Waiting for teacher's screen...</p>
+                    <p className="text-slate-600 text-xs">The teacher will share their screen shortly</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
 
-        {/* C. Right Sidebar: Chat / Participants Lists */}
+        {/* C. Right Sidebar: Chat / Participants */}
         <aside className="w-80 bg-slate-900/60 border-l border-slate-900 flex flex-col min-h-0 shrink-0">
           
-          {/* Navigation/Toggle Tabs */}
           <div className="grid grid-cols-2 border-b border-slate-900 bg-slate-950 p-1 flex-shrink-0 select-none">
             <button 
               onClick={() => setActiveTab('chat')}
@@ -793,8 +1061,8 @@ const LectureRoom = () => {
             </button>
           </div>
 
-          {/* Tab 1: Chat Message Roster */}
-          <div className={`flex-1 flex flex-col min-h-0 min-w-0 ${activeTab === 'chat' ? 'block' : 'hidden'}`}>
+          {/* Chat Tab */}
+          <div className={`flex-1 flex flex-col min-h-0 min-w-0 ${activeTab === 'chat' ? 'flex' : 'hidden'}`}>
             <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
               {chatMessages.map((msg, idx) => {
                 const isMyMessage = msg.senderEmail === user.email;
@@ -824,7 +1092,6 @@ const LectureRoom = () => {
               })}
             </div>
 
-            {/* Input Form */}
             <form onSubmit={handleSendChat} className="p-3 border-t border-slate-900 bg-slate-950 flex gap-2 flex-shrink-0">
               <input 
                 type="text" 
@@ -842,7 +1109,7 @@ const LectureRoom = () => {
             </form>
           </div>
 
-          {/* Tab 2: Participants List */}
+          {/* Participants Tab */}
           <div className={`flex-1 overflow-y-auto p-4 space-y-3 ${activeTab === 'participants' ? 'block' : 'hidden'}`}>
             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Verified Attendance</div>
             {participants.length === 0 ? (
@@ -871,10 +1138,9 @@ const LectureRoom = () => {
         </aside>
       </div>
 
-      {/* 3. Bottom Control Bar */}
+      {/* ── Bottom Control Bar ── */}
       <footer className="h-16 border-t border-slate-900 bg-slate-950 px-6 flex items-center justify-between flex-shrink-0 select-none">
         
-        {/* Verification Status details */}
         <div className="flex items-center gap-2">
           {user?.role === 'student' && googleEmail && (
             <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-400 font-semibold">
@@ -889,10 +1155,11 @@ const LectureRoom = () => {
           )}
         </div>
 
-        {/* Audio / Video Toggles */}
+        {/* Audio / Video / Screen Share Toggles */}
         <div className="flex items-center gap-3">
           <button 
             onClick={toggleMic}
+            title={micActive ? 'Mute Microphone' : 'Unmute Microphone'}
             className={`h-10 w-10 rounded-xl flex items-center justify-center border transition-all ${
               micActive 
                 ? 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white' 
@@ -904,6 +1171,7 @@ const LectureRoom = () => {
           
           <button 
             onClick={toggleCamera}
+            title={cameraActive ? 'Turn Off Camera' : 'Turn On Camera'}
             className={`h-10 w-10 rounded-xl flex items-center justify-center border transition-all ${
               cameraActive 
                 ? 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white' 
@@ -912,6 +1180,22 @@ const LectureRoom = () => {
           >
             {cameraActive ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
           </button>
+
+          {/* Screen Share Quick Toggle (Teacher only) — also in bottom bar */}
+          {isTeacher && (
+            <button 
+              onClick={() => isScreenSharing ? stopScreenShare() : startScreenShare()}
+              title={isScreenSharing ? 'Stop Screen Share' : 'Share Your Screen'}
+              className={`h-10 px-4 rounded-xl border flex items-center gap-2 text-xs font-semibold transition-all ${
+                isScreenSharing
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25'
+                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              {isScreenSharing ? <MonitorOff className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+              {isScreenSharing ? 'Stop Share' : 'Share Screen'}
+            </button>
+          )}
 
           {!isTeacher && (
             <button 
