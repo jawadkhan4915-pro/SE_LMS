@@ -54,6 +54,12 @@ exports.getAllRequests = async (req, res) => {
     const filter = {};
     if (status) filter.status = status;
 
+    if (req.user.role === 'hod') {
+      const deptCourses = await Course.find({ department: req.user.department }).select('_id');
+      const deptCourseIds = deptCourses.map(c => c._id);
+      filter.course = { $in: deptCourseIds };
+    }
+
     const requests = await EnrollmentRequest.find(filter)
       .populate('student', 'name email semester phone')
       .populate('course', 'name code creditHours semester')

@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const Enrollment = require('../models/enrollment');
 const Result = require('../models/result');
+const { getDepartmentFullName } = require('../utils/departmentHelper');
 
 // @desc    Get fee slip info for student (generated dynamically)
 // @route   GET /api/slips/fee
@@ -41,7 +42,7 @@ exports.getFeeSlip = async (req, res) => {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 15);
 
-    const rollNumber = `SE-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`;
+    const rollNumber = `${student.department || 'SE'}-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`;
 
     const feeSlip = {
       voucherNo,
@@ -58,7 +59,7 @@ exports.getFeeSlip = async (req, res) => {
       dueDate: dueDate.toLocaleDateString('en-US', { dateStyle: 'medium' }),
       bankDetails: {
         bankName: 'HBL – Habib Bank Limited',
-        title: 'University of Technology – SE Dept',
+        title: `University of Technology – ${student.department || 'SE'} Dept`,
         accountNo: '12345-678901-234'
       }
     };
@@ -89,7 +90,7 @@ exports.getRollNumberSlip = async (req, res) => {
         }
       });
 
-    const rollNumber = `SE-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`;
+    const rollNumber = `${student.department || 'SE'}-${new Date().getFullYear()}-${String(student._id).slice(-4).toUpperCase()}`;
     const examYear = new Date().getFullYear();
 
     const slip = {
@@ -97,7 +98,7 @@ exports.getRollNumberSlip = async (req, res) => {
       rollNumber,
       student: {
         name: student.name,
-        program: 'BS Software Engineering',
+        program: `BS ${getDepartmentFullName(student.department)}`,
         email: student.email,
         contact: student.phone || 'N/A'
       },

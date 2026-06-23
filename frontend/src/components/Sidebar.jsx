@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
+import { getDepartmentFullName } from '../utils/departmentHelper';
 import {
   LayoutDashboard,
   BookOpen,

@@ -3,18 +3,23 @@ const User = require('../models/user');
 const Notice = require('../models/notice');
 const Enrollment = require('../models/enrollment');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { getDepartmentFullName } = require('../utils/departmentHelper');
 
 /**
  * Builds dynamic system prompt context depending on the user's role and database information.
  */
 const buildSystemContext = async (user) => {
-  let context = `You are "AI Assistant", the local AI Agent of the Software Engineering Department Learning Management System (SE-LMS).
+  const deptName = user.role === 'admin' ? 'University' : getDepartmentFullName(user.department);
+  const lmsName = user.role === 'admin' ? 'Uni-LMS' : `${user.department || 'SE'}-LMS`;
+
+  let context = `You are "AI Assistant", the local AI Agent of the ${deptName} Department Learning Management System (${lmsName}).
 You are highly helpful, polite, and technical. You help the user navigate and use the LMS effectively.
 
 Here is the current logged-in user details:
 - Name: ${user.name}
 - Email: ${user.email}
 - Role: ${user.role}
+- Department: ${user.department || 'N/A'}
 `;
 
   try {

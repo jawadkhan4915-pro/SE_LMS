@@ -149,9 +149,11 @@ exports.getStudentStats = async (req, res) => {
 // @access  Private/HOD
 exports.getHODStats = async (req, res) => {
   try {
-    const studentCount = await User.countDocuments({ role: 'student' });
-    const teacherCount = await User.countDocuments({ role: 'teacher' });
-    const courseCount = await Course.countDocuments();
+    const department = req.user.department || 'SE';
+
+    const studentCount = await User.countDocuments({ role: 'student', department });
+    const teacherCount = await User.countDocuments({ role: 'teacher', department });
+    const courseCount = await Course.countDocuments({ department });
 
     // Aggregated average GPA per course category or course
     const gpaStats = await Enrollment.aggregate([
@@ -171,6 +173,7 @@ exports.getHODStats = async (req, res) => {
         }
       },
       { $unwind: '$courseDetails' },
+      { $match: { 'courseDetails.department': department } },
       {
         $project: {
           courseName: '$courseDetails.name',
@@ -220,6 +223,7 @@ exports.getHODStats = async (req, res) => {
         }
       },
       { $unwind: '$courseDetails' },
+      { $match: { 'courseDetails.department': department } },
       {
         $project: {
           courseName: '$courseDetails.name',
