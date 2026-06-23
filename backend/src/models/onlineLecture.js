@@ -65,6 +65,15 @@ const OnlineLectureSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  activeMode: {
+    type: String,
+    enum: ['slides', 'whiteboard', 'screenshare'],
+    default: 'slides'
+  },
+  screenShareFrame: {
+    type: String,
+    default: ''
+  },
   chatMessages: [{
     senderName: {
       type: String,

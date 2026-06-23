@@ -226,7 +226,7 @@ exports.joinLecture = async (req, res) => {
 // @route   PUT /api/lectures/:meetingId/state
 // @access  Private
 exports.updateLectureState = async (req, res) => {
-  const { whiteboardData, currentSlide, chatMessage, isActive } = req.body;
+  const { whiteboardData, currentSlide, chatMessage, isActive, activeMode, screenShareFrame } = req.body;
 
   try {
     const lecture = await OnlineLecture.findOne({ meetingId: req.params.meetingId });
@@ -245,6 +245,12 @@ exports.updateLectureState = async (req, res) => {
     }
     if (currentSlide !== undefined && isTeacher) {
       lecture.currentSlide = currentSlide;
+    }
+    if (activeMode !== undefined && isTeacher) {
+      lecture.activeMode = activeMode;
+    }
+    if (screenShareFrame !== undefined && isTeacher) {
+      lecture.screenShareFrame = screenShareFrame;
     }
 
     // Both teachers and authenticated participants can post chat messages
@@ -266,6 +272,8 @@ exports.updateLectureState = async (req, res) => {
         isActive: lecture.isActive,
         whiteboardData: lecture.whiteboardData,
         currentSlide: lecture.currentSlide,
+        activeMode: lecture.activeMode,
+        screenShareFrame: lecture.screenShareFrame,
         chatMessages: lecture.chatMessages,
         participantsCount: lecture.participants.length
       }
@@ -293,6 +301,8 @@ exports.getLectureState = async (req, res) => {
         isActive: lecture.isActive,
         whiteboardData: lecture.whiteboardData,
         currentSlide: lecture.currentSlide,
+        activeMode: lecture.activeMode,
+        screenShareFrame: lecture.screenShareFrame,
         chatMessages: lecture.chatMessages,
         participants: lecture.participants
       }
