@@ -28,6 +28,7 @@ const ManageUsers = () => {
   const [semester, setSemester] = useState('1');
   const [section, setSection] = useState('A');
   const [phone, setPhone] = useState('');
+  const [department, setDepartment] = useState('SE');
 
   const showMsg = (text) => { setMessage(text); setTimeout(() => setMessage(''), 3000); };
 
@@ -52,10 +53,11 @@ const ManageUsers = () => {
       await api.post('/users', {
         name, email, password, role, phone,
         semester: role === 'student' ? Number(semester) : undefined,
-        section: role === 'student' ? section : undefined
+        section: role === 'student' ? section : undefined,
+        department: role !== 'admin' ? department : undefined
       });
       showMsg('User registered successfully!');
-      setName(''); setEmail(''); setPassword(''); setPhone(''); setSection('A'); setIsOpen(false);
+      setName(''); setEmail(''); setPassword(''); setPhone(''); setSection('A'); setDepartment('SE'); setIsOpen(false);
       fetchUsers();
     } catch (e) { alert(e.response?.data?.message || 'Failed to create user'); }
   };
@@ -127,7 +129,7 @@ const ManageUsers = () => {
           <table className="w-full">
             <thead className="table-head">
               <tr>
-                {['#', 'Name', 'Email', 'Role', 'Details', 'Actions'].map(h => (
+                {['#', 'Name', 'Email', 'Role', 'Dept', 'Details', 'Actions'].map(h => (
                   <th key={h} className="table-th">{h}</th>
                 ))}
               </tr>
@@ -135,7 +137,7 @@ const ManageUsers = () => {
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="table-td text-center text-slate-400 py-10">
+                  <td colSpan={7} className="table-td text-center text-slate-400 py-10">
                     <Users className="h-8 w-8 mx-auto mb-2 text-slate-300" />
                     No users found.
                   </td>
@@ -151,10 +153,11 @@ const ManageUsers = () => {
                       <span className="font-semibold text-slate-800">{u.name}</span>
                     </div>
                   </td>
-                  <td className="table-td text-slate-500">{u.email}</td>
+                  <td className="table-td text-slate-550">{u.email}</td>
                   <td className="table-td">
                     <span className={roleBadge[u.role] || 'badge-gray'}>{u.role}</span>
                   </td>
+                  <td className="table-td text-slate-600 font-semibold text-xs">{u.department || '—'}</td>
                   <td className="table-td text-slate-550 text-xs">
                     {u.role === 'student' ? `Semester ${u.semester} (Sec ${u.section || 'A'})` : u.phone || '—'}
                   </td>
@@ -239,6 +242,17 @@ const ManageUsers = () => {
                     <option value="admin">Admin</option>
                   </select>
                 </div>
+                {role !== 'admin' && (
+                  <div>
+                    <label className="form-label">Department</label>
+                    <select className="form-select" value={department} onChange={e => setDepartment(e.target.value)}>
+                      <option value="SE">Software Engineering</option>
+                      <option value="CS">Computer Science</option>
+                      <option value="IT">Information Technology</option>
+                      <option value="EE">Electrical Engineering</option>
+                    </select>
+                  </div>
+                )}
                 {role === 'student' && (
                   <>
                     <div>

@@ -51,8 +51,8 @@ const Login = () => {
               <GraduationCap className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">SE-LMS</h1>
-              <p className="text-indigo-300 text-xs font-medium">Software Engineering Department</p>
+              <h1 className="text-xl font-bold tracking-tight">Uni-LMS</h1>
+              <p className="text-indigo-300 text-xs font-medium">University Portal</p>
             </div>
           </div>
 
@@ -74,7 +74,7 @@ const Login = () => {
               <span className="text-sm text-indigo-100">{feat}</span>
             </div>
           ))}
-          <p className="text-indigo-300 text-xs mt-6">© 2026 SE Department · University LMS</p>
+          <p className="text-indigo-300 text-xs mt-6">© 2026 University LMS</p>
         </div>
       </div>
 
@@ -87,8 +87,8 @@ const Login = () => {
               <GraduationCap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">SE-LMS</h1>
-              <p className="text-slate-500 text-xs">Software Engineering Dept</p>
+              <h1 className="text-lg font-bold text-slate-900">Uni-LMS</h1>
+              <p className="text-slate-500 text-xs">University Portal</p>
             </div>
           </div>
 

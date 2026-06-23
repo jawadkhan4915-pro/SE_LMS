@@ -120,8 +120,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <GraduationCap className="h-5 w-5 text-white" />
         </div>
         <div className="overflow-hidden">
-          <h1 className="font-bold text-white text-base leading-tight">SE-LMS</h1>
-          <p className="text-indigo-300 text-[10px] font-medium truncate">Software Engineering Dept</p>
+          <h1 className="font-bold text-white text-base leading-tight">
+            {user?.role === 'admin' ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`}
+          </h1>
+          <p className="text-indigo-300 text-[10px] font-medium truncate">
+            {user?.role === 'admin' ? 'University Admin' : `${getDepartmentFullName(user?.department)} Dept`}
+          </p>
         </div>
       </div>
 

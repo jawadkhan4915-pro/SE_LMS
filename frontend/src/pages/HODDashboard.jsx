@@ -9,6 +9,7 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend
 } from 'chart.js';
 import { useSelector } from 'react-redux';
+import { getDepartmentFullName } from '../utils/departmentHelper';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -62,7 +63,7 @@ const HODDashboard = () => {
   };
 
   const kpis = [
-    { label: 'Dept. Students', value: stats?.students || 0, sub: 'Software Engineering', icon: Users, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
+    { label: 'Dept. Students', value: stats?.students || 0, sub: `${getDepartmentFullName(user?.department)} Department`, icon: Users, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
     { label: 'Faculty Members', value: stats?.teachers || 0, sub: 'Academic staff', icon: TrendingUp, iconBg: 'bg-sky-50', iconColor: 'text-sky-600' },
     { label: 'Active Courses', value: stats?.courses || 0, sub: 'Approved curriculum', icon: BookOpen, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
   ];

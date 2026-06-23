@@ -13,6 +13,7 @@ const Register = () => {
   const [semester, setSemester] = useState('1');
   const [section, setSection] = useState('A');
   const [phone, setPhone] = useState('');
+  const [department, setDepartment] = useState('SE');
   const [localError, setLocalError] = useState('');
 
   const { loading, error } = useSelector(s => s.auth);
@@ -28,7 +29,8 @@ const Register = () => {
       const r = await api.post('/auth/register', {
         name, email, password, role, phone,
         semester: role === 'student' ? Number(semester) : undefined,
-        section: role === 'student' ? section : undefined
+        section: role === 'student' ? section : undefined,
+        department: role !== 'admin' ? department : undefined
       });
       dispatch(authSuccess(r.data.data));
       navigate('/dashboard');
@@ -50,11 +52,11 @@ const Register = () => {
               <GraduationCap className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">SE-LMS</h1>
-              <p className="text-indigo-300 text-xs font-medium">Software Engineering Dept</p>
+              <h1 className="text-xl font-bold tracking-tight">Uni-LMS</h1>
+              <p className="text-indigo-300 text-xs font-medium">University Portal</p>
             </div>
           </div>
-          <h2 className="text-3xl font-bold leading-tight mb-4">Join the SE Department<br />Academic Platform</h2>
+          <h2 className="text-3xl font-bold leading-tight mb-4">Join our Academic<br />Learning Platform</h2>
           <p className="text-indigo-200 text-sm leading-relaxed max-w-xs">
             Create your account to access courses, assignments, quizzes, and academic resources.
           </p>
@@ -69,7 +71,7 @@ const Register = () => {
               <span className="text-sm text-indigo-100">{f}</span>
             </div>
           ))}
-          <p className="text-indigo-300 text-xs mt-4">© 2026 SE Department · University LMS</p>
+          <p className="text-indigo-300 text-xs mt-4">© 2026 University LMS</p>
         </div>
       </div>
 
@@ -82,8 +84,8 @@ const Register = () => {
               <GraduationCap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">SE-LMS</h1>
-              <p className="text-slate-500 text-xs">Software Engineering Dept</p>
+              <h1 className="text-lg font-bold text-slate-900">Uni-LMS</h1>
+              <p className="text-slate-500 text-xs">University Portal</p>
             </div>
           </div>
 
@@ -136,6 +138,17 @@ const Register = () => {
                   <option value="admin">Administrator</option>
                 </select>
               </div>
+              {role !== 'admin' && (
+                <div>
+                  <label className="form-label">Department</label>
+                  <select className="form-select" value={department} onChange={e => setDepartment(e.target.value)}>
+                    <option value="SE">Software Engineering</option>
+                    <option value="CS">Computer Science</option>
+                    <option value="IT">Information Technology</option>
+                    <option value="EE">Electrical Engineering</option>
+                  </select>
+                </div>
+              )}
               {role === 'student' && (
                 <>
                   <div>

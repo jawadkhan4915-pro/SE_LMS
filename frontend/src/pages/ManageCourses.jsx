@@ -17,6 +17,7 @@ const ManageCourses = () => {
   const [semester, setSemester] = useState('1');
   const [teacher, setTeacher] = useState('');
   const [category, setCategory] = useState('Core');
+  const [department, setDepartment] = useState('SE');
 
   const fetchCoursesAndTeachers = async () => {
     try {
@@ -55,12 +56,14 @@ const ManageCourses = () => {
         creditHours: Number(creditHours),
         semester: Number(semester),
         teacher,
-        category
+        category,
+        department
       });
       setMessage('Course published successfully in curriculum.');
       setName('');
       setCode('');
       setDescription('');
+      setDepartment('SE');
       setIsOpen(false);
       fetchCoursesAndTeachers();
       setTimeout(() => setMessage(''), 3000);

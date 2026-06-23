@@ -51,7 +51,8 @@ exports.getFeeSlip = async (req, res) => {
         name: student.name,
         rollNumber,
         email: student.email,
-        phone: student.phone
+        phone: student.phone,
+        department: student.department
       },
       semester,
       feesBreakdown,
@@ -100,7 +101,8 @@ exports.getRollNumberSlip = async (req, res) => {
         name: student.name,
         program: `BS ${getDepartmentFullName(student.department)}`,
         email: student.email,
-        contact: student.phone || 'N/A'
+        contact: student.phone || 'N/A',
+        department: student.department
       },
       semester: student.semester || 1,
       courses: enrollments.map(e => ({

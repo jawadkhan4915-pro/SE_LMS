@@ -30,7 +30,7 @@ const Header = ({ toggleSidebar }) => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
 
-  const currentTitle = pageTitles[location.pathname] || 'SE-LMS';
+  const currentTitle = pageTitles[location.pathname] || (user?.role === 'admin' ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`);
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
   const badgeStyle = roleStyles[user?.role] || 'bg-slate-100 text-slate-600';
 
