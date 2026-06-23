@@ -4,6 +4,7 @@ import {
   FileText, Download, Printer, ShieldAlert, 
   CreditCard, GraduationCap, Building2, Calendar, ClipboardCheck 
 } from 'lucide-react';
+import { getDepartmentFullName } from '../utils/departmentHelper';
 
 const MySlips = () => {
   const [activeTab, setActiveTab] = useState('fee'); // 'fee' or 'rollnumber'
@@ -137,8 +138,8 @@ const MySlips = () => {
                     <Building2 className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 className="font-extrabold text-slate-900 text-lg">DEPARTMENT OF SOFTWARE ENGINEERING</h2>
-                    <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider">SE LMS fee voucher</p>
+                    <h2 className="font-extrabold text-slate-900 text-lg">DEPARTMENT OF {getDepartmentFullName(feeData.student?.department || 'SE').toUpperCase()}</h2>
+                    <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider">{feeData.student?.department || 'SE'} LMS fee voucher</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -161,7 +162,7 @@ const MySlips = () => {
                 </div>
                 <div>
                   <span className="text-slate-400 block font-medium">SEMESTER / PROGRAM</span>
-                  <span className="font-bold text-slate-800 text-sm mt-0.5 block">Semester {feeData.semester} · BS SE</span>
+                  <span className="font-bold text-slate-800 text-sm mt-0.5 block">Semester {feeData.semester} · BS {getDepartmentFullName(feeData.student?.department || 'SE')}</span>
                 </div>
               </div>
 
@@ -226,7 +227,7 @@ const MySlips = () => {
                     <GraduationCap className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 className="font-extrabold text-slate-900 text-lg">DEPARTMENT OF SOFTWARE ENGINEERING</h2>
+                    <h2 className="font-extrabold text-slate-900 text-lg">DEPARTMENT OF {getDepartmentFullName(rollNoData.student?.department || 'SE').toUpperCase()}</h2>
                     <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider">Midterm & Final Examination Roll Number Slip</p>
                   </div>
                 </div>
@@ -245,7 +246,7 @@ const MySlips = () => {
                   </div>
                   <div>
                     <span className="text-slate-400 block font-medium">DEPARTMENT / PROG.</span>
-                    <span className="font-bold text-slate-800 text-sm mt-0.5 block">{rollNoData.student?.program || 'BS Software Engineering'}</span>
+                    <span className="font-bold text-slate-800 text-sm mt-0.5 block">{rollNoData.student?.program || `BS ${getDepartmentFullName(rollNoData.student?.department || 'SE')}`}</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-medium">SEMESTER</span>

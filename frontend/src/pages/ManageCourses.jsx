@@ -136,7 +136,10 @@ const ManageCourses = () => {
             ) : (
               courses.map((course) => (
                 <tr key={course._id} className="hover:bg-slate-900/10">
-                  <td className="p-4 font-bold text-teal-400">{course.code}</td>
+                  <td className="p-4 font-bold text-teal-400">
+                    <span>{course.code}</span>
+                    <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-350 font-semibold">{course.department}</span>
+                  </td>
                   <td className="p-4 text-slate-200">
                     <p className="font-bold">{course.name}</p>
                     <p className="text-[10px] text-slate-500 truncate max-w-xs">{course.description}</p>
@@ -262,6 +265,23 @@ const ManageCourses = () => {
                   {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
                     <option key={sem} value={sem}>Semester {sem}</option>
                   ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Department *</label>
+                <select
+                  className="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-teal-500 text-xs"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  required
+                >
+                  <option value="SE">Software Engineering (SE)</option>
+                  <option value="CS">Computer Science (CS)</option>
+                  <option value="IT">Information Technology (IT)</option>
+                  <option value="EE">Electrical Engineering (EE)</option>
                 </select>
               </div>
             </div>
