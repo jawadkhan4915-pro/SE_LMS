@@ -13,7 +13,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public (for initial setup or Student registry; restricted roles validated in client)
 exports.register = async (req, res) => {
-  const { name, email, password, role, semester, section, phone } = req.body;
+  const { name, email, password, role, semester, section, phone, department } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -29,7 +29,8 @@ exports.register = async (req, res) => {
       role: role || 'student',
       semester: role === 'student' ? semester : undefined,
       section: role === 'student' ? section : undefined,
-      phone
+      phone,
+      department: role !== 'admin' ? department : undefined
     });
 
     if (user) {
@@ -42,6 +43,7 @@ exports.register = async (req, res) => {
           role: user.role,
           semester: user.semester,
           section: user.section,
+          department: user.department,
           token: generateToken(user._id)
         }
       });
@@ -53,6 +55,9 @@ exports.register = async (req, res) => {
   }
 };
 
+// @desc    Auth user & get token
+// @route   POST /api/auth/login
+// @access  Public
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
@@ -72,6 +77,7 @@ exports.login = async (req, res) => {
           role: user.role,
           semester: user.semester,
           section: user.section,
+          department: user.department,
           profilePicture: user.profilePicture,
           phone: user.phone,
           token: generateToken(user._id)

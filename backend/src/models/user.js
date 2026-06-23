@@ -25,6 +25,12 @@ const UserSchema = new mongoose.Schema({
     enum: ['student', 'teacher', 'admin', 'hod'], 
     required: [true, 'Role is required']
   },
+  department: {
+    type: String,
+    enum: ['SE', 'CS', 'IT', 'EE'],
+    required: function() { return this.role !== 'admin'; }, // Required for all except admin
+    default: 'SE'
+  },
   semester: { 
     type: Number, 
     required: function() { return this.role === 'student'; } // Required only for students

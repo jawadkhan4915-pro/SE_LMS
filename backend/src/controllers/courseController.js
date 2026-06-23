@@ -6,7 +6,7 @@ const User = require('../models/user');
 // @route   POST /api/courses
 // @access  Private/Admin
 exports.createCourse = async (req, res) => {
-  const { name, code, description, creditHours, semester, teacher, category } = req.body;
+  const { name, code, description, creditHours, semester, teacher, category, department } = req.body;
 
   try {
     const teacherUser = await User.findById(teacher);
@@ -26,7 +26,8 @@ exports.createCourse = async (req, res) => {
       creditHours,
       semester,
       teacher,
-      category
+      category,
+      department: department || 'SE'
     });
 
     res.status(201).json({ success: true, data: course });
@@ -64,7 +65,14 @@ exports.getCourses = async (req, res) => {
 // @access  Private/Admin/HOD
 exports.getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find().populate('teacher', 'name email');
+    let query = {};
+    if (req.user.role === 'hod') {
+      query = { department: req.user.department };
+    } else if (req.query.department) {
+      query = { department: req.query.department };
+    }
+
+    const courses = await Course.find(query).populate('teacher', 'name email');
     res.json({ success: true, count: courses.length, data: courses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -5,7 +5,7 @@ const Enrollment = require('../models/enrollment');
 // @route   GET /api/users
 // @access  Private/Admin
 exports.getUsers = async (req, res) => {
-  const { page = 1, limit = 10, search, role } = req.query;
+  const { page = 1, limit = 10, search, role, department } = req.query;
 
   try {
     const query = {};
@@ -21,6 +21,11 @@ exports.getUsers = async (req, res) => {
     // Role filter
     if (role) {
       query.role = role;
+    }
+
+    // Department filter
+    if (department) {
+      query.department = department;
     }
 
     const total = await User.countDocuments(query);
@@ -64,7 +69,7 @@ exports.getUserById = async (req, res) => {
 // @route   POST /api/users
 // @access  Private/Admin
 exports.createUser = async (req, res) => {
-  const { name, email, password, role, semester, section, phone } = req.body;
+  const { name, email, password, role, semester, section, phone, department } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -79,7 +84,8 @@ exports.createUser = async (req, res) => {
       role,
       semester: role === 'student' ? semester : undefined,
       section: role === 'student' ? section : undefined,
-      phone
+      phone,
+      department: role !== 'admin' ? department : undefined
     });
 
     res.status(201).json({
@@ -91,7 +97,8 @@ exports.createUser = async (req, res) => {
         role: user.role,
         semester: user.semester,
         section: user.section,
-        phone: user.phone
+        phone: user.phone,
+        department: user.department
       }
     });
   } catch (error) {

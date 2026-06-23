@@ -26,6 +26,12 @@ const ResourceSchema = new mongoose.Schema({
     ref: 'Course', 
     index: true,
     default: null // null if department-wide general resource
+  },
+  department: {
+    type: String,
+    enum: ['SE', 'CS', 'IT', 'EE'],
+    default: 'SE',
+    index: true
   }
 }, { timestamps: true });
 

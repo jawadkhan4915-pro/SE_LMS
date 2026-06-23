@@ -8,6 +8,8 @@ exports.createResource = async (req, res) => {
   const { title, type, url, courseId } = req.body;
 
   try {
+    let department = req.user.department || 'SE';
+
     // Check if course-specific resource and authorize teacher
     if (courseId) {
       const course = await Course.findById(courseId);
@@ -18,6 +20,7 @@ exports.createResource = async (req, res) => {
       if (course.teacher.toString() !== req.user.id && req.user.role !== 'admin') {
         return res.status(403).json({ success: false, message: 'Not authorized to add resources for this course' });
       }
+      department = course.department;
     }
 
     const resource = await Resource.create({
@@ -25,7 +28,8 @@ exports.createResource = async (req, res) => {
       type,
       url,
       uploadedBy: req.user.id,
-      course: courseId || null
+      course: courseId || null,
+      department
     });
 
     res.status(201).json({ success: true, data: resource });
@@ -45,7 +49,11 @@ exports.getResources = async (req, res) => {
     if (courseId) {
       query = { course: courseId };
     } else {
-      query = { course: null }; // General department wide resources
+      // General department wide resources
+      query = { 
+        course: null,
+        department: req.user.role === 'admin' ? (req.query.department || 'SE') : req.user.department 
+      };
     }
 
     const resources = await Resource.find(query)

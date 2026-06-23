@@ -18,6 +18,12 @@ const NoticeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User', 
     required: true 
+  },
+  department: {
+    type: String,
+    enum: ['all', 'SE', 'CS', 'IT', 'EE'],
+    default: 'all',
+    index: true
   }
 }, { timestamps: true });
 

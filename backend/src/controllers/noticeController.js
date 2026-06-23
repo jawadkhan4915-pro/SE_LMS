@@ -4,14 +4,15 @@ const Notice = require('../models/notice');
 // @route   POST /api/notices
 // @access  Private/Admin/HOD
 exports.createNotice = async (req, res) => {
-  const { title, content, targetRoles } = req.body;
+  const { title, content, targetRoles, department } = req.body;
 
   try {
     const notice = await Notice.create({
       title,
       content,
       targetRoles: targetRoles || ['student', 'teacher'],
-      postedBy: req.user.id
+      postedBy: req.user.id,
+      department: req.user.role === 'hod' ? req.user.department : (department || 'all')
     });
 
     res.status(201).json({ success: true, data: notice });
@@ -29,7 +30,10 @@ exports.getNotices = async (req, res) => {
 
     // Filter notices targeted for user's role, or general
     if (req.user.role !== 'admin') {
-      query = { targetRoles: req.user.role };
+      query = { 
+        targetRoles: req.user.role,
+        department: { $in: ['all', req.user.department] }
+      };
     }
 
     const notices = await Notice.find(query)

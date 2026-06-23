@@ -40,6 +40,13 @@ const CourseSchema = new mongoose.Schema({
     type: String, 
     required: [true, 'Category is required'],
     trim: true
+  },
+  department: {
+    type: String,
+    enum: ['SE', 'CS', 'IT', 'EE'],
+    required: [true, 'Department is required'],
+    default: 'SE',
+    index: true
   }
 }, { timestamps: true });
 
