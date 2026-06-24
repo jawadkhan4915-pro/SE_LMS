@@ -52,6 +52,7 @@ const AdminDashboard = () => {
     { label: 'Assignments', value: stats?.totalAssignments || 0, sub: 'Across all courses', icon: FileText, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
   ];
 
+  const quickActions = [
     { to: '/admin/users', label: 'Manage Users', desc: 'Create, edit & manage accounts', icon: UserCheck, color: 'indigo' },
     { to: '/admin/courses', label: 'Manage Courses', desc: 'Add modules & assign faculty', icon: BookOpen, color: 'sky' },
     { to: '/admin/departments', label: 'Manage Departments', desc: 'Register or edit LMS departments', icon: Building2, color: 'amber' },
