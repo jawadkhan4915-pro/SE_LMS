@@ -39,21 +39,25 @@ const seedDemoAccounts = async () => {
       { name: 'Prof. Sarah Connor', email: 'teacher@lms.edu', password: 'password123', role: 'teacher', phone: '+92 301 1234567', department: 'SE' },
       { name: 'Dr. Alan Turing', email: 'teacher2@lms.edu', password: 'password123', role: 'teacher', phone: '+92 301 2345678', department: 'SE' },
       { name: 'Demo HOD', email: 'hod@lms.edu', password: 'password123', role: 'hod', phone: '+92 303 1234567', department: 'SE' },
+      { name: 'SE Admin', email: 'se_admin@lms.edu', password: 'password123', role: 'admin', phone: '+92 302 1111111', department: 'SE' },
 
       // CS Department
       { name: 'Grace Student', email: 'cs_student@lms.edu', password: 'password123', role: 'student', semester: 4, phone: '+92 300 5556667', department: 'CS' },
       { name: 'Dr. Grace Hopper', email: 'cs_teacher@lms.edu', password: 'password123', role: 'teacher', phone: '+92 301 5556667', department: 'CS' },
       { name: 'CS HOD', email: 'cs_hod@lms.edu', password: 'password123', role: 'hod', phone: '+92 303 5556667', department: 'CS' },
+      { name: 'CS Admin', email: 'cs_admin@lms.edu', password: 'password123', role: 'admin', phone: '+92 302 2222222', department: 'CS' },
 
       // IT Department
       { name: 'Tim Student', email: 'it_student@lms.edu', password: 'password123', role: 'student', semester: 4, phone: '+92 300 7778889', department: 'IT' },
       { name: 'Dr. Tim Berners-Lee', email: 'it_teacher@lms.edu', password: 'password123', role: 'teacher', phone: '+92 301 7778889', department: 'IT' },
       { name: 'IT HOD', email: 'it_hod@lms.edu', password: 'password123', role: 'hod', phone: '+92 303 7778889', department: 'IT' },
+      { name: 'IT Admin', email: 'it_admin@lms.edu', password: 'password123', role: 'admin', phone: '+92 302 3333333', department: 'IT' },
 
       // EE Department
       { name: 'Nikola Student', email: 'ee_student@lms.edu', password: 'password123', role: 'student', semester: 4, phone: '+92 300 9990001', department: 'EE' },
       { name: 'Dr. Nikola Tesla', email: 'ee_teacher@lms.edu', password: 'password123', role: 'teacher', phone: '+92 301 9990001', department: 'EE' },
       { name: 'EE HOD', email: 'ee_hod@lms.edu', password: 'password123', role: 'hod', phone: '+92 303 9990001', department: 'EE' },
+      { name: 'EE Admin', email: 'ee_admin@lms.edu', password: 'password123', role: 'admin', phone: '+92 302 4444444', department: 'EE' },
 
       // General Admin (University-wide, no department)
       { name: 'Demo Admin', email: 'admin@lms.edu', password: 'password123', role: 'admin', phone: '+92 302 1234567' }

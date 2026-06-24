@@ -12,15 +12,30 @@ const QuizAttempt = require('../models/quizAttempt');
 // @access  Private/Admin
 exports.getAdminStats = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const studentCount = await User.countDocuments({ role: 'student' });
-    const teacherCount = await User.countDocuments({ role: 'teacher' });
-    const adminCount = await User.countDocuments({ role: 'admin' });
-    const hodCount = await User.countDocuments({ role: 'hod' });
+    const department = req.user.department; // If null/undefined, then it's university-wide admin
+    const userQuery = department ? { department } : {};
+    const courseQuery = department ? { department } : {};
+    
+    // For assignments and resources: if department-restricted, we only count within department courses/resources
+    let assignmentQuery = {};
+    let resourceQuery = {};
+    
+    if (department) {
+      const deptCourses = await Course.find({ department }).select('_id');
+      const deptCourseIds = deptCourses.map(c => c._id);
+      assignmentQuery = { course: { $in: deptCourseIds } };
+      resourceQuery = { $or: [{ course: { $in: deptCourseIds } }, { department }] };
+    }
 
-    const totalCourses = await Course.countDocuments();
-    const totalAssignments = await Assignment.countDocuments();
-    const totalResources = await Resource.countDocuments();
+    const totalUsers = await User.countDocuments(userQuery);
+    const studentCount = await User.countDocuments({ role: 'student', ...userQuery });
+    const teacherCount = await User.countDocuments({ role: 'teacher', ...userQuery });
+    const adminCount = await User.countDocuments({ role: 'admin', ...userQuery });
+    const hodCount = await User.countDocuments({ role: 'hod', ...userQuery });
+
+    const totalCourses = await Course.countDocuments(courseQuery);
+    const totalAssignments = await Assignment.countDocuments(assignmentQuery);
+    const totalResources = await Resource.countDocuments(resourceQuery);
 
     res.json({
       success: true,

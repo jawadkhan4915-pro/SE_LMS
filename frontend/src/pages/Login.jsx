@@ -10,24 +10,28 @@ const demoDepartments = {
     { role: 'Student', name: 'Demo Student', email: 'student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
     { role: 'Teacher', name: 'Prof. Sarah Connor', email: 'teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
     { role: 'HOD', name: 'Demo HOD', email: 'hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+    { role: 'Admin', name: 'SE Admin', email: 'se_admin@lms.edu', pass: 'password123', color: 'amber', icon: '⚙️' },
   ],
   CS: [
     { role: 'Student', name: 'Grace Student', email: 'cs_student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
     { role: 'Teacher', name: 'Dr. Grace Hopper', email: 'cs_teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
     { role: 'HOD', name: 'CS HOD', email: 'cs_hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+    { role: 'Admin', name: 'CS Admin', email: 'cs_admin@lms.edu', pass: 'password123', color: 'amber', icon: '⚙️' },
   ],
   IT: [
     { role: 'Student', name: 'Tim Student', email: 'it_student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
     { role: 'Teacher', name: 'Dr. Tim Berners-Lee', email: 'it_teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
     { role: 'HOD', name: 'IT HOD', email: 'it_hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+    { role: 'Admin', name: 'IT Admin', email: 'it_admin@lms.edu', pass: 'password123', color: 'amber', icon: '⚙️' },
   ],
   EE: [
     { role: 'Student', name: 'Nikola Student', email: 'ee_student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
     { role: 'Teacher', name: 'Dr. Nikola Tesla', email: 'ee_teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
     { role: 'HOD', name: 'EE HOD', email: 'ee_hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+    { role: 'Admin', name: 'EE Admin', email: 'ee_admin@lms.edu', pass: 'password123', color: 'amber', icon: '⚙️' },
   ],
   Admin: [
-    { role: 'Admin', name: 'Demo Admin', email: 'admin@lms.edu', pass: 'password123', color: 'amber', icon: '⚙️' },
+    { role: 'Univ Admin', name: 'Demo Admin', email: 'admin@lms.edu', pass: 'password123', color: 'amber', icon: '🛡️' },
   ]
 };
 

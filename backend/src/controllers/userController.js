@@ -10,6 +10,13 @@ exports.getUsers = async (req, res) => {
   try {
     const query = {};
 
+    // Restrict department admins
+    if (req.user.role === 'admin' && req.user.department) {
+      query.department = req.user.department;
+    } else if (department) {
+      query.department = department;
+    }
+
     // Search filter
     if (search) {
       query.$or = [
@@ -21,11 +28,6 @@ exports.getUsers = async (req, res) => {
     // Role filter
     if (role) {
       query.role = role;
-    }
-
-    // Department filter
-    if (department) {
-      query.department = department;
     }
 
     const total = await User.countDocuments(query);
@@ -77,6 +79,17 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User with this email already exists' });
     }
 
+    // Restrict department admins
+    let targetDepartment = department;
+    if (req.user.role === 'admin' && req.user.department) {
+      if (role !== 'admin' && department && department !== req.user.department) {
+        return res.status(403).json({ success: false, message: 'You can only create users in your own department' });
+      }
+      if (role !== 'admin') {
+        targetDepartment = req.user.department;
+      }
+    }
+
     const user = await User.create({
       name,
       email,
@@ -85,7 +98,7 @@ exports.createUser = async (req, res) => {
       semester: role === 'student' ? semester : undefined,
       section: role === 'student' ? section : undefined,
       phone,
-      department: role !== 'admin' ? department : undefined
+      department: targetDepartment
     });
 
     res.status(201).json({
@@ -121,6 +134,11 @@ exports.updateUser = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    // Restrict department admins
+    if (req.user.role === 'admin' && req.user.department && user.role !== 'admin' && user.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'Not authorized to update users outside your department' });
+    }
+
     // Do not allow changing role or email unless admin
     if (req.user.role !== 'admin') {
       delete req.body.role;
@@ -153,6 +171,11 @@ exports.deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Restrict department admins
+    if (req.user.role === 'admin' && req.user.department && user.role !== 'admin' && user.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete users outside your department' });
     }
 
     await User.findByIdAndDelete(req.params.id);

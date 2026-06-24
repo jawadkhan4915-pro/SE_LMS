@@ -95,6 +95,11 @@ exports.createTimetableEntry = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
+    // Restrict department admins
+    if (req.user.role === 'admin' && req.user.department && course.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'You can only schedule classes for courses in your own department' });
+    }
+
     const targetSection = section || 'A';
 
     // Conflict detection
@@ -172,6 +177,11 @@ exports.updateTimetableEntry = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
+    // Restrict department admins
+    if (req.user.role === 'admin' && req.user.department && course.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'You can only schedule classes for courses in your own department' });
+    }
+
     // Conflict detection (excluding current entry ID)
     const conflictResult = await checkConflicts({
       day: newDay,
@@ -224,6 +234,14 @@ exports.deleteTimetableEntry = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Timetable entry not found' });
     }
 
+    // Restrict department admins
+    if (req.user.role === 'admin' && req.user.department) {
+      const course = await Course.findById(entry.course);
+      if (course && course.department !== req.user.department) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete schedules outside your department' });
+      }
+    }
+
     await Timetable.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Timetable entry deleted successfully' });
   } catch (error) {
@@ -271,6 +289,14 @@ exports.getTimetable = async (req, res) => {
       }
     } else if (role === 'admin' || role === 'hod') {
       // Admin/HOD filters: teacherId, semester, classroom, section, or studentId. Or get all.
+      
+      // Restrict department admins/HODs to courses of their own department
+      if (req.user.role === 'hod' || (req.user.role === 'admin' && req.user.department)) {
+        const deptCourses = await Course.find({ department: req.user.department }).select('_id');
+        const courseIds = deptCourses.map(c => c._id);
+        query.course = { $in: courseIds };
+      }
+
       if (teacherId) {
         query.teacher = teacherId;
       }
@@ -286,7 +312,11 @@ exports.getTimetable = async (req, res) => {
       if (studentId) {
         const enrollments = await Enrollment.find({ student: studentId }).select('course');
         const courseIds = enrollments.map(e => e.course);
-        query.course = { $in: courseIds };
+        if (query.course) {
+          query.course = { $in: courseIds.filter(id => query.course.$in.some(cId => cId.toString() === id.toString())) };
+        } else {
+          query.course = { $in: courseIds };
+        }
       }
     }
 
@@ -357,17 +387,25 @@ exports.getFreeClassrooms = async (req, res) => {
 // @access  Private/Admin
 exports.generateAutoTimetable = async (req, res) => {
   try {
-    // 1. Solve schedule allocations
-    const solvedSlots = await solveTimetable();
+    const department = req.user.role === 'admin' && req.user.department ? req.user.department : null;
 
-    // 2. Wipe the existing database collection
-    await Timetable.deleteMany({});
+    // 1. Solve schedule allocations
+    const solvedSlots = await solveTimetable(department);
+
+    // 2. Wipe the existing database collection for this department (or all if university admin)
+    const deleteQuery = {};
+    if (department) {
+      const deptCourses = await Course.find({ department }).select('_id');
+      const deptCourseIds = deptCourses.map(c => c._id);
+      deleteQuery.course = { $in: deptCourseIds };
+    }
+    await Timetable.deleteMany(deleteQuery);
 
     // 3. Save all solved slots
     const savedEntries = await Timetable.insertMany(solvedSlots);
 
     // 4. Populate details to return a nice summary to the client
-    const populated = await Timetable.find({})
+    const populated = await Timetable.find(deleteQuery)
       .populate('course', 'name code category creditHours')
       .populate('teacher', 'name email')
       .sort({ day: 1, startTime: 1 });

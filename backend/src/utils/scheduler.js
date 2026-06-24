@@ -15,9 +15,10 @@ const TIME_SLOTS = [
  * Runs the conflict-free weekly scheduling solver.
  * @returns {Promise<Array>} Array of timetable entries to save
  */
-const solveTimetable = async () => {
+const solveTimetable = async (department = null) => {
   // 1. Fetch all courses with teacher details
-  const courses = await Course.find().populate('teacher', 'name email');
+  const courseQuery = department ? { department } : {};
+  const courses = await Course.find(courseQuery).populate('teacher', 'name email');
   if (courses.length === 0) {
     throw new Error('No courses found in the database. Please add courses before generating a timetable.');
   }
@@ -51,6 +52,51 @@ const solveTimetable = async () => {
       classroomOccupied[room][day] = {};
     });
   });
+
+  // Pre-populate occupancies with already scheduled classes from other departments to prevent conflicts
+  const Timetable = require('../models/timetable');
+  const otherCourseQuery = department ? { department: { $ne: department } } : null;
+  
+  let existingSlots = [];
+  if (department) {
+    const otherCourses = await Course.find(otherCourseQuery).select('_id');
+    const otherCourseIds = otherCourses.map(c => c._id);
+    existingSlots = await Timetable.find({ course: { $in: otherCourseIds } });
+  }
+
+  for (const slot of existingSlots) {
+    const day = slot.day;
+    const slotTime = slot.startTime;
+    const classroom = slot.classroom;
+    const teacherId = slot.teacher.toString();
+    const semester = slot.semester;
+    const section = slot.section;
+
+    // Mark classroom as occupied
+    if (classroomOccupied[classroom] && classroomOccupied[classroom][day]) {
+      classroomOccupied[classroom][day][slotTime] = true;
+    }
+
+    // Mark teacher as occupied
+    if (!teacherOccupied[teacherId]) {
+      teacherOccupied[teacherId] = {};
+      DAYS.forEach(d => { teacherOccupied[teacherId][d] = {}; });
+    }
+    teacherOccupied[teacherId][day][slotTime] = true;
+
+    // Mark semester section as occupied
+    if (!semesterOccupied[semester]) {
+      semesterOccupied[semester] = { 'A': {}, 'B': {}, 'C': {} };
+      DAYS.forEach(d => {
+        semesterOccupied[semester]['A'][d] = {};
+        semesterOccupied[semester]['B'][d] = {};
+        semesterOccupied[semester]['C'][d] = {};
+      });
+    }
+    if (semesterOccupied[semester][section] && semesterOccupied[semester][section][day]) {
+      semesterOccupied[semester][section][day][slotTime] = true;
+    }
+  }
 
   const timetableEntries = [];
 

@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     enum: ['SE', 'CS', 'IT', 'EE'],
     required: function() { return this.role !== 'admin'; }, // Required for all except admin
-    default: 'SE'
+    default: function() { return this.role === 'admin' ? undefined : 'SE'; }
   },
   semester: { 
     type: Number, 

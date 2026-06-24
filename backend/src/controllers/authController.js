@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
       semester: role === 'student' ? semester : undefined,
       section: role === 'student' ? section : undefined,
       phone,
-      department: role !== 'admin' ? department : undefined
+      department: department
     });
 
     if (user) {

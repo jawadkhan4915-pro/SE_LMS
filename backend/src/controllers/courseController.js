@@ -19,6 +19,15 @@ exports.createCourse = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Course with this code already exists' });
     }
 
+    // Restrict department admins
+    let targetDepartment = department || 'SE';
+    if (req.user.role === 'admin' && req.user.department) {
+      if (department && department !== req.user.department) {
+        return res.status(403).json({ success: false, message: 'You can only create courses in your own department' });
+      }
+      targetDepartment = req.user.department;
+    }
+
     const course = await Course.create({
       name,
       code: code.toUpperCase(),
@@ -27,7 +36,7 @@ exports.createCourse = async (req, res) => {
       semester,
       teacher,
       category,
-      department: department || 'SE'
+      department: targetDepartment
     });
 
     res.status(201).json({ success: true, data: course });
@@ -67,6 +76,8 @@ exports.getAllCourses = async (req, res) => {
   try {
     let query = {};
     if (req.user.role === 'hod') {
+      query = { department: req.user.department };
+    } else if (req.user.role === 'admin' && req.user.department) {
       query = { department: req.user.department };
     } else if (req.query.department) {
       query = { department: req.query.department };
@@ -112,6 +123,11 @@ exports.updateCourse = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to edit this course' });
     }
 
+    // Safeguard to prevent unauthorized department admins editing other departments' courses
+    if (req.user.role === 'admin' && req.user.department && course.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'Not authorized to edit courses outside your department' });
+    }
+
     // Verify assigned teacher exists
     if (req.body.teacher) {
       const teacherUser = await User.findById(req.body.teacher);
@@ -140,6 +156,11 @@ exports.deleteCourse = async (req, res) => {
 
     if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    // Safeguard to prevent unauthorized department admins deleting other departments' courses
+    if (req.user.role === 'admin' && req.user.department && course.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete courses outside your department' });
     }
 
     // Remove course
