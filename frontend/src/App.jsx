@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import api from './utils/api';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
@@ -41,8 +42,18 @@ import ManageUsers from './pages/ManageUsers';
 import ManageCourses from './pages/ManageCourses';
 import HODDashboard from './pages/HODDashboard';
 import CoordinatorDashboard from './pages/CoordinatorDashboard';
+import ManageDepartments from './pages/ManageDepartments';
 
 function App() {
+  useEffect(() => {
+    // Pre-fetch and cache departments in localStorage on application load
+    api.get('/departments')
+      .then(res => {
+        localStorage.setItem('departments', JSON.stringify(res.data.data));
+      })
+      .catch(err => console.error('Failed to pre-fetch departments:', err));
+  }, []);
+
   return (
     <Provider store={store}>
       <Router>
@@ -215,6 +226,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <ManageCourses />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="admin/departments" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <ManageDepartments />
                 </ProtectedRoute>
               } 
             />

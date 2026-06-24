@@ -1,0 +1,19 @@
+const express = require('express');
+const router = express.Router();
+const { 
+  getDepartments, 
+  createDepartment, 
+  updateDepartment, 
+  deleteDepartment 
+} = require('../controllers/departmentController');
+const { protect, authorizeRoles } = require('../middlewares/auth');
+
+router.route('/')
+  .get(getDepartments)
+  .post(protect, authorizeRoles('admin'), createDepartment);
+
+router.route('/:id')
+  .put(protect, authorizeRoles('admin'), updateDepartment)
+  .delete(protect, authorizeRoles('admin'), deleteDepartment);
+
+module.exports = router;

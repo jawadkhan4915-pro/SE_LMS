@@ -20,7 +20,8 @@ import {
   CheckSquare,
   Video,
   Calendar,
-  Sparkles
+  Sparkles,
+  Building2
 } from 'lucide-react';
 
 const roleColors = {
@@ -90,6 +91,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
           { path: '/admin/users', label: 'Manage Users', icon: Users },
           { path: '/admin/courses', label: 'Manage Courses', icon: BookOpen },
+          { path: '/admin/departments', label: 'Manage Depts', icon: Building2 },
           { path: '/timetable', label: 'Manage Timetable', icon: Calendar },
           { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
           { path: '/hod/enrollments', label: 'Enrollment Approvals', icon: Users }, // Admins can also approve

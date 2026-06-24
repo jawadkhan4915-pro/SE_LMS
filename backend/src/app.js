@@ -25,6 +25,7 @@ const onlineLectureRoutes = require('./routes/onlineLectureRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const examRoutes = require('./routes/examRoutes');
+const departmentRoutes = require('./routes/departmentRoutes');
 
 // Initialize app
 const app = express();
@@ -77,6 +78,7 @@ app.use('/api/lectures', onlineLectureRoutes);
 app.use('/api/timetable', timetableRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/exams', examRoutes);
+app.use('/api/departments', departmentRoutes);
 
 // Root route status check
 app.get('/health', (req, res) => {

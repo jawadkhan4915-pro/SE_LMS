@@ -9,6 +9,7 @@ const QuizAttempt = require('../models/quizAttempt');
 const Attendance = require('../models/attendance');
 const Resource = require('../models/resource');
 const Notice = require('../models/notice');
+const Department = require('../models/department');
 
 const seedDemoAccounts = async () => {
   try {
@@ -26,8 +27,21 @@ const seedDemoAccounts = async () => {
     await Attendance.deleteMany({});
     await Resource.deleteMany({});
     await Notice.deleteMany({});
+    await Department.deleteMany({});
 
     console.log('Cleared database collections. Starting rich seeding...');
+
+    // 0. Seed Departments
+    const departmentsData = [
+      { code: 'SE', name: 'Software Engineering' },
+      { code: 'CS', name: 'Computer Science' },
+      { code: 'IT', name: 'Information Technology' },
+      { code: 'EE', name: 'Electrical Engineering' }
+    ];
+    for (const d of departmentsData) {
+      await Department.create(d);
+      console.log(`Seeded Department: ${d.code} - ${d.name}`);
+    }
 
     // 1. Seed Users
     const usersData = [

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { authStart, authSuccess, authFailure } from '../store/slices/authSlice';
@@ -14,7 +14,27 @@ const Register = () => {
   const [section, setSection] = useState('A');
   const [phone, setPhone] = useState('');
   const [department, setDepartment] = useState('SE');
+  const [departments, setDepartments] = useState([]);
   const [localError, setLocalError] = useState('');
+
+  useEffect(() => {
+    api.get('/departments')
+      .then(res => {
+        setDepartments(res.data.data);
+        if (res.data.data.length > 0) {
+          setDepartment(res.data.data[0].code);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load departments in Register:', err);
+        setDepartments([
+          { code: 'SE', name: 'Software Engineering' },
+          { code: 'CS', name: 'Computer Science' },
+          { code: 'IT', name: 'Information Technology' },
+          { code: 'EE', name: 'Electrical Engineering' }
+        ]);
+      });
+  }, []);
 
   const { loading, error } = useSelector(s => s.auth);
   const dispatch = useDispatch();
@@ -142,10 +162,9 @@ const Register = () => {
                 <div>
                   <label className="form-label">Department</label>
                   <select className="form-select" value={department} onChange={e => setDepartment(e.target.value)}>
-                    <option value="SE">Software Engineering</option>
-                    <option value="CS">Computer Science</option>
-                    <option value="IT">Information Technology</option>
-                    <option value="EE">Electrical Engineering</option>
+                    {departments.map(d => (
+                      <option key={d.code} value={d.code}>{d.name}</option>
+                    ))}
                   </select>
                 </div>
               )}

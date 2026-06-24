@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import {
   Users, BookOpen, FileText, FolderOpen,
-  UserCheck, Megaphone, ArrowUpRight, TrendingUp, Shield
+  UserCheck, Megaphone, ArrowUpRight, TrendingUp, Shield, Building2
 } from 'lucide-react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -52,10 +52,10 @@ const AdminDashboard = () => {
     { label: 'Assignments', value: stats?.totalAssignments || 0, sub: 'Across all courses', icon: FileText, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
   ];
 
-  const quickActions = [
     { to: '/admin/users', label: 'Manage Users', desc: 'Create, edit & manage accounts', icon: UserCheck, color: 'indigo' },
     { to: '/admin/courses', label: 'Manage Courses', desc: 'Add modules & assign faculty', icon: BookOpen, color: 'sky' },
-    { to: '/notices', label: 'Broadcast Notice', desc: 'Post department announcements', icon: Megaphone, color: 'amber' },
+    { to: '/admin/departments', label: 'Manage Departments', desc: 'Register or edit LMS departments', icon: Building2, color: 'amber' },
+    { to: '/notices', label: 'Broadcast Notice', desc: 'Post department announcements', icon: Megaphone, color: 'indigo' },
     { to: '/resources', label: 'Resource Library', desc: 'Upload and manage materials', icon: FolderOpen, color: 'emerald' },
   ];
 

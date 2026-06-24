@@ -18,20 +18,32 @@ const ManageCourses = () => {
   const [teacher, setTeacher] = useState('');
   const [category, setCategory] = useState('Core');
   const [department, setDepartment] = useState('SE');
+  const [departments, setDepartments] = useState([]);
 
   const fetchCoursesAndTeachers = async () => {
     try {
-      const [coursesResponse, usersResponse] = await Promise.all([
+      const [coursesResponse, usersResponse, deptsResponse] = await Promise.all([
         api.get('/courses/all'),
-        api.get('/users?limit=100&role=teacher')
+        api.get('/users?limit=100&role=teacher'),
+        api.get('/departments')
       ]);
       setCourses(coursesResponse.data.data);
       setTeachers(usersResponse.data.data);
+      setDepartments(deptsResponse.data.data);
       if (usersResponse.data.data.length > 0) {
         setTeacher(usersResponse.data.data[0]._id); // Default assign first teacher
       }
+      if (deptsResponse.data.data.length > 0) {
+        setDepartment(deptsResponse.data.data[0].code); // Default assign first department
+      }
     } catch (err) {
       console.error(err);
+      setDepartments([
+        { code: 'SE', name: 'Software Engineering' },
+        { code: 'CS', name: 'Computer Science' },
+        { code: 'IT', name: 'Information Technology' },
+        { code: 'EE', name: 'Electrical Engineering' }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -278,10 +290,9 @@ const ManageCourses = () => {
                   onChange={(e) => setDepartment(e.target.value)}
                   required
                 >
-                  <option value="SE">Software Engineering (SE)</option>
-                  <option value="CS">Computer Science (CS)</option>
-                  <option value="IT">Information Technology (IT)</option>
-                  <option value="EE">Electrical Engineering (EE)</option>
+                  {departments.map(d => (
+                    <option key={d.code} value={d.code}>{d.name} ({d.code})</option>
+                  ))}
                 </select>
               </div>
             </div>

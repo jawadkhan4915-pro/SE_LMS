@@ -29,6 +29,29 @@ const ManageUsers = () => {
   const [section, setSection] = useState('A');
   const [phone, setPhone] = useState('');
   const [department, setDepartment] = useState('SE');
+  const [departments, setDepartments] = useState([]);
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await api.get('/departments');
+      setDepartments(res.data.data);
+      if (res.data.data.length > 0) {
+        setDepartment(res.data.data[0].code);
+      }
+    } catch (err) {
+      console.error('Failed to load departments in ManageUsers:', err);
+      setDepartments([
+        { code: 'SE', name: 'Software Engineering' },
+        { code: 'CS', name: 'Computer Science' },
+        { code: 'IT', name: 'Information Technology' },
+        { code: 'EE', name: 'Electrical Engineering' }
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
 
   const showMsg = (text) => { setMessage(text); setTimeout(() => setMessage(''), 3000); };
 
@@ -246,10 +269,9 @@ const ManageUsers = () => {
                   <div>
                     <label className="form-label">Department</label>
                     <select className="form-select" value={department} onChange={e => setDepartment(e.target.value)}>
-                      <option value="SE">Software Engineering</option>
-                      <option value="CS">Computer Science</option>
-                      <option value="IT">Information Technology</option>
-                      <option value="EE">Electrical Engineering</option>
+                      {departments.map(d => (
+                        <option key={d.code} value={d.code}>{d.name}</option>
+                      ))}
                     </select>
                   </div>
                 )}
