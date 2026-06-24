@@ -5,17 +5,37 @@ import { authStart, authSuccess, authFailure } from '../store/slices/authSlice';
 import api from '../utils/api';
 import { GraduationCap, Mail, Lock, AlertCircle, ChevronRight, Sparkles } from 'lucide-react';
 
-const demoAccounts = [
-  { role: 'Student', email: 'student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
-  { role: 'Teacher', email: 'teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
-  { role: 'Admin', email: 'admin@lms.edu', pass: 'password123', color: 'amber', icon: '⚙️' },
-  { role: 'HOD', email: 'hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
-];
+const demoDepartments = {
+  SE: [
+    { role: 'Student', name: 'Demo Student', email: 'student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
+    { role: 'Teacher', name: 'Prof. Sarah Connor', email: 'teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
+    { role: 'HOD', name: 'Demo HOD', email: 'hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+  ],
+  CS: [
+    { role: 'Student', name: 'Grace Student', email: 'cs_student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
+    { role: 'Teacher', name: 'Dr. Grace Hopper', email: 'cs_teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
+    { role: 'HOD', name: 'CS HOD', email: 'cs_hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+  ],
+  IT: [
+    { role: 'Student', name: 'Tim Student', email: 'it_student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
+    { role: 'Teacher', name: 'Dr. Tim Berners-Lee', email: 'it_teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
+    { role: 'HOD', name: 'IT HOD', email: 'it_hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+  ],
+  EE: [
+    { role: 'Student', name: 'Nikola Student', email: 'ee_student@lms.edu', pass: 'password123', color: 'indigo', icon: '🎓' },
+    { role: 'Teacher', name: 'Dr. Nikola Tesla', email: 'ee_teacher@lms.edu', pass: 'password123', color: 'sky', icon: '📚' },
+    { role: 'HOD', name: 'EE HOD', email: 'ee_hod@lms.edu', pass: 'password123', color: 'emerald', icon: '🏛️' },
+  ],
+  Admin: [
+    { role: 'Admin', name: 'Demo Admin', email: 'admin@lms.edu', pass: 'password123', color: 'amber', icon: '⚙️' },
+  ]
+};
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
+  const [activeDept, setActiveDept] = useState('SE');
 
   const { loading, error } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -156,23 +176,51 @@ const Login = () => {
 
           {/* Demo Accounts */}
           <div className="mt-8 pt-6 border-t border-slate-200">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 text-center">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3.5 text-center">
               Quick Demo — Click to Auto-Fill
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              {demoAccounts.map(d => (
+
+            {/* Department Tabs */}
+            <div className="flex flex-wrap justify-center gap-1.5 mb-4">
+              {Object.keys(demoDepartments).map((dept) => (
                 <button
-                  key={d.role}
-                  id={`demo-${d.role.toLowerCase()}`}
+                  key={dept}
+                  type="button"
+                  onClick={() => setActiveDept(dept)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border ${
+                    activeDept === dept
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {dept}
+                </button>
+              ))}
+            </div>
+
+            {/* Department-specific Demo Accounts Grid */}
+            <div className="grid grid-cols-2 gap-2">
+              {demoDepartments[activeDept].map((d) => (
+                <button
+                  key={d.email}
+                  id={`demo-${activeDept.toLowerCase()}-${d.role.toLowerCase()}`}
                   type="button"
                   onClick={() => { setEmail(d.email); setPassword(d.pass); }}
-                  className="demo-pill"
+                  className="demo-pill flex items-start gap-2.5 p-2.5"
                 >
-                  <span className="text-base leading-none">{d.icon}</span>
-                  <div className="mt-1.5">
-                    <p className="text-xs font-bold text-slate-800">{d.role}</p>
+                  <span className="text-xl mt-0.5 leading-none">{d.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="text-xs font-bold text-slate-800">{d.role}</p>
+                      <span className="text-[8px] bg-slate-200 text-slate-600 px-1 rounded font-semibold uppercase">
+                        {activeDept}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-500 truncate" title={d.name}>
+                      {d.name}
+                    </p>
                     <p className="text-[10px] text-slate-400 truncate">{d.email}</p>
-                    <p className="text-[10px] text-slate-400">pw: password123</p>
+                    <p className="text-[9px] font-semibold text-indigo-600/90 mt-0.5">pw: password123</p>
                   </div>
                 </button>
               ))}
