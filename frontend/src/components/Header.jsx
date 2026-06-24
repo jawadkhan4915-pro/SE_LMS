@@ -1,5 +1,5 @@
-import React from 'react';
-import { Menu, Bell, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, Bell, Search, Sun, Moon } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
@@ -29,6 +29,24 @@ const roleStyles = {
 const Header = ({ toggleSidebar }) => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
+
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   const currentTitle = pageTitles[location.pathname] || (user?.role === 'admin' ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`);
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
@@ -67,6 +85,14 @@ const Header = ({ toggleSidebar }) => {
 
       {/* Right: Actions + User */}
       <div className="flex items-center gap-2 flex-shrink-0">
+        <button 
+          onClick={toggleTheme}
+          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors"
+          title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+        >
+          {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4 text-amber-500" />}
+        </button>
+
         <button className="relative h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50">
           <Bell className="h-4 w-4" />
           <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
