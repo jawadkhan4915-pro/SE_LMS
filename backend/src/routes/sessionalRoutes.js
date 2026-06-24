@@ -11,9 +11,9 @@ const {
 // Student
 router.get('/my', protect, authorizeRoles('student'), getMySessional);
 
-// Teacher/Admin
-router.post('/', protect, authorizeRoles('teacher', 'admin'), saveSessional);
-router.post('/bulk', protect, authorizeRoles('teacher', 'admin'), bulkSaveSessional);
-router.get('/course/:courseId', protect, authorizeRoles('teacher', 'admin', 'hod'), getCourseSessional);
+// Teacher/Admin/Coordinator
+router.post('/', protect, authorizeRoles('teacher', 'admin', 'coordinator'), saveSessional);
+router.post('/bulk', protect, authorizeRoles('teacher', 'admin', 'coordinator'), bulkSaveSessional);
+router.get('/course/:courseId', protect, authorizeRoles('teacher', 'admin', 'hod', 'coordinator'), getCourseSessional);
 
 module.exports = router;

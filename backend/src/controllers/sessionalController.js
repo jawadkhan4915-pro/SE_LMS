@@ -14,6 +14,11 @@ exports.saveSessional = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to enter marks for this course' });
     }
 
+    // Validate coordinator belongs to the same department
+    if (req.user.role === 'coordinator' && req.user.department && course.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'Not authorized to enter marks outside your department' });
+    }
+
     const total = Math.min(
       (assignment1 || 0) + (assignment2 || 0) + (quiz1 || 0) + (quiz2 || 0) + (presentation || 0),
       20
@@ -57,6 +62,11 @@ exports.bulkSaveSessional = async (req, res) => {
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
     if (req.user.role === 'teacher' && course.teacher.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Validate coordinator belongs to the same department
+    if (req.user.role === 'coordinator' && req.user.department && course.department !== req.user.department) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 

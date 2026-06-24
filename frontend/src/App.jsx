@@ -40,6 +40,7 @@ import AIAssistant from './pages/AIAssistant';
 import ManageUsers from './pages/ManageUsers';
 import ManageCourses from './pages/ManageCourses';
 import HODDashboard from './pages/HODDashboard';
+import CoordinatorDashboard from './pages/CoordinatorDashboard';
 
 function App() {
   return (
@@ -232,6 +233,16 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['hod']}>
                   <HODEnrollmentApproval />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Coordinator Section */}
+            <Route 
+              path="coordinator/exams" 
+              element={
+                <ProtectedRoute allowedRoles={['coordinator', 'admin']}>
+                  <CoordinatorDashboard />
                 </ProtectedRoute>
               } 
             />

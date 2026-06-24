@@ -12,10 +12,10 @@ const {
 // Student
 router.get('/my', protect, authorizeRoles('student'), getMyResults);
 
-// Teacher/Admin
-router.post('/', protect, authorizeRoles('teacher', 'admin'), uploadResult);
-router.post('/bulk', protect, authorizeRoles('teacher', 'admin'), bulkUploadResults);
-router.get('/course/:courseId', protect, authorizeRoles('teacher', 'admin', 'hod'), getCourseResults);
-router.get('/student/:studentId', protect, authorizeRoles('teacher', 'admin', 'hod'), getStudentResults);
+// Teacher/Admin/Coordinator
+router.post('/', protect, authorizeRoles('teacher', 'admin', 'coordinator'), uploadResult);
+router.post('/bulk', protect, authorizeRoles('teacher', 'admin', 'coordinator'), bulkUploadResults);
+router.get('/course/:courseId', protect, authorizeRoles('teacher', 'admin', 'hod', 'coordinator'), getCourseResults);
+router.get('/student/:studentId', protect, authorizeRoles('teacher', 'admin', 'hod', 'coordinator'), getStudentResults);
 
 module.exports = router;

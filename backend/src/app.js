@@ -24,6 +24,7 @@ const slipRoutes = require('./routes/slipRoutes');
 const onlineLectureRoutes = require('./routes/onlineLectureRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const examRoutes = require('./routes/examRoutes');
 
 // Initialize app
 const app = express();
@@ -75,6 +76,7 @@ app.use('/api/slips', slipRoutes);
 app.use('/api/lectures', onlineLectureRoutes);
 app.use('/api/timetable', timetableRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/exams', examRoutes);
 
 // Root route status check
 app.get('/health', (req, res) => {

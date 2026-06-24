@@ -19,7 +19,7 @@ router.route('/')
   .get(getCourses)
   .post(authorizeRoles('admin'), createCourse);
 
-router.get('/all', authorizeRoles('admin', 'hod', 'student', 'teacher'), getAllCourses);
+router.get('/all', authorizeRoles('admin', 'hod', 'student', 'teacher', 'coordinator'), getAllCourses);
 
 router.route('/:id')
   .get(getCourseById)

@@ -28,6 +28,7 @@ const roleColors = {
   teacher: { bg: 'bg-sky-100', text: 'text-sky-700' },
   admin: { bg: 'bg-amber-100', text: 'text-amber-700' },
   hod: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  coordinator: { bg: 'bg-purple-100', text: 'text-purple-700' },
 };
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -95,6 +96,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/notices', label: 'Notice Board', icon: Megaphone },
           { path: '/resources', label: 'Resources', icon: FolderOpen },
         ];
+      case 'coordinator':
+        return [
+          { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { path: '/coordinator/exams', label: 'Exam Operations', icon: FileText },
+          { path: '/results/upload', label: 'Manage Exam Results', icon: GraduationCap },
+          { path: '/sessional/manage', label: 'Sessional Marks', icon: CheckSquare },
+          { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
+          { path: '/notices', label: 'Notice Board', icon: Megaphone },
+          { path: '/resources', label: 'Resources', icon: FolderOpen },
+        ];
       default:
         return common;
     }
@@ -121,10 +132,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         </div>
         <div className="overflow-hidden">
           <h1 className="font-bold text-white text-base leading-tight">
-            {user?.role === 'admin' ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`}
+            {(user?.role === 'admin' || (user?.role === 'coordinator' && !user?.department)) ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`}
           </h1>
           <p className="text-indigo-300 text-[10px] font-medium truncate">
-            {user?.role === 'admin' ? 'University Admin' : `${getDepartmentFullName(user?.department)} Dept`}
+            {user?.role === 'admin' ? 'University Admin' : (user?.role === 'coordinator' && !user?.department ? 'University Exam Dept' : `${getDepartmentFullName(user?.department)} Dept`)}
           </p>
         </div>
       </div>

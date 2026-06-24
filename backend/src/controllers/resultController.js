@@ -31,6 +31,11 @@ exports.uploadResult = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to upload results for this course' });
     }
 
+    // Validate coordinator belongs to the same department
+    if (req.user.role === 'coordinator' && req.user.department && course.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'Not authorized to upload results outside your department' });
+    }
+
     const total = (midterm || 0) + (finalterm || 0) + (sessional || 0);
     const { grade, gp } = calcGrade(total);
 
@@ -86,6 +91,11 @@ exports.bulkUploadResults = async (req, res) => {
     if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
     if (req.user.role === 'teacher' && course.teacher.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Validate coordinator belongs to the same department
+    if (req.user.role === 'coordinator' && req.user.department && course.department !== req.user.department) {
+      return res.status(403).json({ success: false, message: 'Not authorized to upload results outside your department' });
     }
 
     const ops = results.map(async (r) => {

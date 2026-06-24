@@ -10,6 +10,9 @@ const isSlipLocked = async (studentId) => {
   const student = await User.findById(studentId);
   if (!student) return true;
   
+  // If the coordinator has manually overridden the slip lock, unlock it instantly
+  if (student.examSlipOverride) return false;
+  
   const semester = student.semester || 1;
 
   let midtermSetting = await Settings.findOne({ key: 'midterm_exam_date' });
