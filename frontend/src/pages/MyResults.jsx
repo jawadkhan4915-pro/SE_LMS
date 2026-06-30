@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
+import { useSelector } from 'react-redux';
 import { 
   Award, Download, FileSpreadsheet, ShieldAlert, 
   BookOpen, Calculator, Calendar, GraduationCap, Printer 
 } from 'lucide-react';
 
 const MyResults = () => {
+  const { user } = useSelector(s => s.auth);
   const [groupedResults, setGroupedResults] = useState({});
   const [rawResults, setRawResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -132,6 +134,18 @@ const MyResults = () => {
         </div>
       ) : (
         <div className="space-y-6 printable-transcript">
+          {/* Print Header only visible on paper */}
+          <div className="hidden print:block text-center space-y-2 mb-6 border-b-2 border-slate-900 pb-4">
+            <h2 className="text-xl font-black uppercase tracking-widest text-slate-900">University Examination Board</h2>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Official Academic Record Transcript (Unofficial Copy)</h3>
+            <div className="grid grid-cols-2 text-left text-xs gap-x-6 gap-y-1.5 pt-4 max-w-2xl mx-auto border-t border-dashed border-slate-200">
+              <p><strong>Student Name:</strong> {user?.name}</p>
+              <p><strong>Email Address:</strong> {user?.email}</p>
+              <p><strong>Academic Department:</strong> {user?.department || 'SE'}</p>
+              <p><strong>Assigned Section:</strong> {user?.section || 'A'}</p>
+            </div>
+          </div>
+
           {/* CGPA Summary Header */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gradient-to-r from-indigo-600 to-indigo-850 p-6 rounded-2xl text-white shadow-sm border border-indigo-700/10">
             <div>
@@ -215,6 +229,18 @@ const MyResults = () => {
               </div>
             );
           })}
+
+          {/* Official Signature Block for printing */}
+          <div className="hidden print:flex justify-between items-end text-xs text-slate-600 pt-12">
+            <div>
+              <p><strong>Date Printed:</strong> {new Date().toLocaleDateString()}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Verified online via SE-LMS security token.</p>
+            </div>
+            <div className="text-center w-60 space-y-1">
+              <div className="border-t border-slate-400 w-full" />
+              <p className="font-bold text-slate-800">Controller of Examinations</p>
+            </div>
+          </div>
         </div>
       )}
     </div>
