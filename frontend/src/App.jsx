@@ -43,6 +43,9 @@ import ManageCourses from './pages/ManageCourses';
 import HODDashboard from './pages/HODDashboard';
 import CoordinatorDashboard from './pages/CoordinatorDashboard';
 import ManageDepartments from './pages/ManageDepartments';
+import TeacherSelfAttendance from './pages/TeacherSelfAttendance';
+import HODTeacherAttendance from './pages/HODTeacherAttendance';
+import AdminTeacherAttendance from './pages/AdminTeacherAttendance';
 
 function App() {
   useEffect(() => {
@@ -211,6 +214,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="teacher/self-attendance" 
+              element={
+                <ProtectedRoute allowedRoles={['teacher']}>
+                  <TeacherSelfAttendance />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Administrator configurations */}
             <Route 
@@ -237,6 +248,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="admin/teacher-attendance" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminTeacherAttendance />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* HOD Analytics section */}
             <Route 
@@ -252,6 +271,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['hod']}>
                   <HODEnrollmentApproval />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="hod/teacher-attendance" 
+              element={
+                <ProtectedRoute allowedRoles={['hod', 'admin']}>
+                  <HODTeacherAttendance />
                 </ProtectedRoute>
               } 
             />

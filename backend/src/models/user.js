@@ -49,6 +49,14 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     default: '' 
   },
+  faceRegistered: {
+    type: Boolean,
+    default: false
+  },
+  faceTemplate: {
+    type: String,
+    default: ''
+  },
   phone: { 
     type: String, 
     default: '' 

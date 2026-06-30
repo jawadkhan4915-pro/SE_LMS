@@ -21,7 +21,8 @@ import {
   Video,
   Calendar,
   Sparkles,
-  Building2
+  Building2,
+  Camera
 } from 'lucide-react';
 
 const roleColors = {
@@ -69,6 +70,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           ...common,
           { path: '/courses', label: 'My Courses', icon: BookOpen },
           { path: '/attendance/mark', label: 'Mark Attendance', icon: CalendarCheck },
+          { path: '/teacher/self-attendance', label: 'Self Attendance (Face)', icon: Camera },
           { path: '/assignments/manage', label: 'Assignments', icon: FileText },
           { path: '/quizzes/manage', label: 'Quizzes', icon: Award },
           { path: '/sessional/manage', label: 'Sessional Marks', icon: CheckSquare },
@@ -82,6 +84,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
           { path: '/hod/analytics', label: 'Analytics', icon: BarChart3 },
           { path: '/hod/enrollments', label: 'Enrollment Approvals', icon: Users },
+          { path: '/hod/teacher-attendance', label: 'Teacher Attendance', icon: CalendarCheck },
           { path: '/courses', label: 'View Courses', icon: BookOpen },
           { path: '/notices', label: 'Notice Board', icon: Megaphone },
           { path: '/resources', label: 'Resources', icon: FolderOpen },
@@ -95,6 +98,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/timetable', label: 'Manage Timetable', icon: Calendar },
           { path: '/ai-assistant', label: 'AI Assistant', icon: Sparkles },
           { path: '/hod/enrollments', label: 'Enrollment Approvals', icon: Users }, // Admins can also approve
+          { path: '/admin/teacher-attendance', label: 'Teacher Attendance', icon: CalendarCheck },
           { path: '/notices', label: 'Notice Board', icon: Megaphone },
           { path: '/resources', label: 'Resources', icon: FolderOpen },
         ];
