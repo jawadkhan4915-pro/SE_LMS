@@ -24,6 +24,14 @@ exports.getDepartments = async (req, res) => {
 // @access  Private/Admin
 exports.createDepartment = async (req, res) => {
   try {
+    // Restrict department admins (admins with a department restriction)
+    if (req.user.role === 'admin' && req.user.department) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only University Administrators are authorized to register new departments.'
+      });
+    }
+
     let { code, name } = req.body;
     if (!code || !name) {
       return res.status(400).json({
@@ -70,6 +78,14 @@ exports.createDepartment = async (req, res) => {
 // @access  Private/Admin
 exports.updateDepartment = async (req, res) => {
   try {
+    // Restrict department admins (admins with a department restriction)
+    if (req.user.role === 'admin' && req.user.department) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only University Administrators are authorized to update department details.'
+      });
+    }
+
     let { code, name } = req.body;
     const departmentId = req.params.id;
 
@@ -128,6 +144,14 @@ exports.updateDepartment = async (req, res) => {
 // @access  Private/Admin
 exports.deleteDepartment = async (req, res) => {
   try {
+    // Restrict department admins (admins with a department restriction)
+    if (req.user.role === 'admin' && req.user.department) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only University Administrators are authorized to delete departments.'
+      });
+    }
+
     const department = await Department.findById(req.params.id);
     if (!department) {
       return res.status(404).json({

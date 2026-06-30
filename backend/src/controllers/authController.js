@@ -44,6 +44,8 @@ exports.register = async (req, res) => {
           semester: user.semester,
           section: user.section,
           department: user.department,
+          faceRegistered: user.faceRegistered,
+          faceTemplate: user.faceTemplate,
           token: generateToken(user._id)
         }
       });
@@ -80,6 +82,8 @@ exports.login = async (req, res) => {
           department: user.department,
           profilePicture: user.profilePicture,
           phone: user.phone,
+          faceRegistered: user.faceRegistered,
+          faceTemplate: user.faceTemplate,
           token: generateToken(user._id)
         }
       });

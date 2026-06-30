@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import api from '../utils/api';
 import { Building2, Plus, Edit2, Trash2, CheckCircle, AlertCircle, X } from 'lucide-react';
 
 const ManageDepartments = () => {
+  const { user } = useSelector((state) => state.auth);
+  const isUniAdmin = user?.role === 'admin' && !user?.department;
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -116,13 +119,15 @@ const ManageDepartments = () => {
           <Building2 className="h-6 w-6 text-amber-500" />
           <span>University Departments</span>
         </h2>
-        <button 
-          onClick={handleOpenCreate}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all"
-        >
-          <Plus className="h-4.5 w-4.5" />
-          <span>Add Department</span>
-        </button>
+        {isUniAdmin && (
+          <button 
+            onClick={handleOpenCreate}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all"
+          >
+            <Plus className="h-4.5 w-4.5" />
+            <span>Add Department</span>
+          </button>
+        )}
       </div>
 
       {/* Success Notification */}
@@ -148,13 +153,13 @@ const ManageDepartments = () => {
             <tr className="bg-slate-900/40 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
               <th className="p-4 w-1/4">Code</th>
               <th className="p-4 w-1/2">Department Name</th>
-              <th className="p-4 text-center">Actions</th>
+              {isUniAdmin && <th className="p-4 text-center">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60">
             {departments.length === 0 ? (
               <tr>
-                <td colSpan="3" className="p-8 text-center text-slate-500">No departments configured in the LMS.</td>
+                <td colSpan={isUniAdmin ? 3 : 2} className="p-8 text-center text-slate-500">No departments configured in the LMS.</td>
               </tr>
             ) : (
               departments.map((dept) => (
@@ -163,22 +168,24 @@ const ManageDepartments = () => {
                     <span className="px-2 py-1 rounded bg-slate-800 text-slate-300">{dept.code}</span>
                   </td>
                   <td className="p-4 text-slate-200 font-semibold">{dept.name}</td>
-                  <td className="p-4 flex items-center justify-center gap-2">
-                    <button 
-                      onClick={() => handleOpenEdit(dept)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-500 transition-colors"
-                      title="Edit Department"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(dept._id, dept.code)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-950/40 text-slate-300 hover:text-red-500 transition-colors"
-                      title="Delete Department"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </td>
+                  {isUniAdmin && (
+                    <td className="p-4 flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => handleOpenEdit(dept)}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-500 transition-colors"
+                        title="Edit Department"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(dept._id, dept.code)}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-950/40 text-slate-300 hover:text-red-500 transition-colors"
+                        title="Delete Department"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
