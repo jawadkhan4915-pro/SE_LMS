@@ -22,14 +22,14 @@ const UserSchema = new mongoose.Schema({
   },
   role: { 
     type: String, 
-    enum: ['student', 'teacher', 'admin', 'hod', 'coordinator'], 
+    enum: ['student', 'teacher', 'admin', 'hod', 'coordinator', 'accountant'], 
     required: [true, 'Role is required']
   },
   department: {
     type: String,
     enum: ['SE', 'CS', 'IT', 'EE'],
-    required: function() { return this.role !== 'admin' && this.role !== 'coordinator'; }, // Required for all except admin and coordinator
-    default: function() { return (this.role === 'admin' || this.role === 'coordinator') ? undefined : 'SE'; }
+    required: function() { return this.role !== 'admin' && this.role !== 'coordinator' && this.role !== 'accountant'; }, // Required for all except admin, coordinator, and accountant
+    default: function() { return (this.role === 'admin' || this.role === 'coordinator' || this.role === 'accountant') ? undefined : 'SE'; }
   },
   examSlipOverride: {
     type: Boolean,

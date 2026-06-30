@@ -31,6 +31,7 @@ const roleColors = {
   admin: { bg: 'bg-amber-100', text: 'text-amber-700' },
   hod: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
   coordinator: { bg: 'bg-purple-100', text: 'text-purple-700' },
+  accountant: { bg: 'bg-teal-100', text: 'text-teal-700' },
 };
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -112,6 +113,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/notices', label: 'Notice Board', icon: Megaphone },
           { path: '/resources', label: 'Resources', icon: FolderOpen },
         ];
+      case 'accountant':
+        return [
+          { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { path: '/accountant/fees', label: 'Manage Student Fees', icon: CreditCard },
+          { path: '/accountant/salaries', label: 'Pay Faculty Salaries', icon: CheckSquare },
+          { path: '/accountant/expenses', label: 'Record Expenses', icon: FileText },
+          { path: '/accountant/ledger', label: 'Financial Ledger', icon: BarChart3 }
+        ];
       default:
         return common;
     }
@@ -138,10 +147,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         </div>
         <div className="overflow-hidden">
           <h1 className="font-bold text-white text-base leading-tight">
-            {(user?.role === 'admin' || (user?.role === 'coordinator' && !user?.department)) ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`}
+            {(user?.role === 'admin' || user?.role === 'accountant' || (user?.role === 'coordinator' && !user?.department)) ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`}
           </h1>
           <p className="text-indigo-300 text-[10px] font-medium truncate">
-            {user?.role === 'admin' ? 'University Admin' : (user?.role === 'coordinator' && !user?.department ? 'University Exam Dept' : `${getDepartmentFullName(user?.department)} Dept`)}
+            {user?.role === 'admin' ? 'University Admin' : (user?.role === 'accountant' ? 'University Accounts Dept' : (user?.role === 'coordinator' && !user?.department ? 'University Exam Dept' : `${getDepartmentFullName(user?.department)} Dept`))}
           </p>
         </div>
       </div>

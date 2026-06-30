@@ -46,6 +46,10 @@ import ManageDepartments from './pages/ManageDepartments';
 import TeacherSelfAttendance from './pages/TeacherSelfAttendance';
 import HODTeacherAttendance from './pages/HODTeacherAttendance';
 import AdminTeacherAttendance from './pages/AdminTeacherAttendance';
+import AccountantFees from './pages/AccountantFees';
+import AccountantSalaries from './pages/AccountantSalaries';
+import AccountantExpenses from './pages/AccountantExpenses';
+import AccountantLedger from './pages/AccountantLedger';
 
 function App() {
   useEffect(() => {
@@ -279,6 +283,40 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['hod', 'admin']}>
                   <HODTeacherAttendance />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Accountant Portal Paths */}
+            <Route 
+              path="accountant/fees" 
+              element={
+                <ProtectedRoute allowedRoles={['accountant', 'admin']}>
+                  <AccountantFees />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="accountant/salaries" 
+              element={
+                <ProtectedRoute allowedRoles={['accountant', 'admin']}>
+                  <AccountantSalaries />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="accountant/expenses" 
+              element={
+                <ProtectedRoute allowedRoles={['accountant', 'admin']}>
+                  <AccountantExpenses />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="accountant/ledger" 
+              element={
+                <ProtectedRoute allowedRoles={['accountant', 'admin']}>
+                  <AccountantLedger />
                 </ProtectedRoute>
               } 
             />
