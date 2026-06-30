@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { 
   BookOpen, User, Users, PlusCircle, CheckCircle, 
@@ -21,6 +22,7 @@ const getCategoryBadge = (cat) => {
 
 const Courses = () => {
   const { user } = useSelector((s) => s.auth);
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [available, setAvailable] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -174,16 +176,27 @@ const Courses = () => {
                     <span className="truncate">{course.teacher?.name || 'TBA'}</span>
                   </div>
                   {user?.role === 'student' ? (
-                    <span className="badge-green text-[9px] font-bold flex items-center gap-1">
-                      <CheckCircle className="h-3 w-3" /> Enrolled
-                    </span>
-                  ) : (
                     <button
-                      onClick={() => handleViewRoster(course)}
-                      className="btn-secondary btn-sm flex items-center gap-1"
+                      onClick={() => navigate(`/courses/${course._id}`)}
+                      className="btn-primary btn-sm flex items-center gap-1 text-[10px]"
                     >
-                      <Users className="h-3 w-3" /> Roster
+                      Enter Class
                     </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => navigate(`/courses/${course._id}`)}
+                        className="btn-primary btn-sm text-[10px]"
+                      >
+                        Enter
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleViewRoster(course); }}
+                        className="btn-secondary btn-sm flex items-center gap-1 text-[10px]"
+                      >
+                        <Users className="h-3 w-3" /> Roster
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

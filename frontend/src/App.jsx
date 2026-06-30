@@ -15,6 +15,7 @@ import ResetPassword from './pages/ResetPassword';
 import Unauthorized from './pages/Unauthorized';
 import Dashboard from './pages/Dashboard';
 import Courses from './pages/Courses';
+import CourseDetail from './pages/CourseDetail';
 import Notices from './pages/Notices';
 import Resources from './pages/Resources';
 
@@ -105,6 +106,7 @@ function App() {
 
             {/* Courses views */}
             <Route path="courses" element={<Courses />} />
+            <Route path="courses/:courseId" element={<CourseDetail />} />
             
             {/* Online Lectures List */}
             <Route path="lectures" element={<OnlineLectures />} />

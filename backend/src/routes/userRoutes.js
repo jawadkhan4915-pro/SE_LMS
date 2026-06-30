@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getUsers, getUserById, createUser, updateUser, deleteUser } = require('../controllers/userController');
+const { getUsers, getUserById, createUser, updateUser, deleteUser, getXpAndBadges } = require('../controllers/userController');
 const { protect, authorizeRoles } = require('../middlewares/auth');
 
 router.use(protect); // All user routes require authentication
@@ -8,6 +8,8 @@ router.use(protect); // All user routes require authentication
 router.route('/')
   .get(authorizeRoles('admin'), getUsers)
   .post(authorizeRoles('admin'), createUser);
+
+router.get('/profile/xp-badges', getXpAndBadges);
 
 router.route('/:id')
   .get(getUserById)

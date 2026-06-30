@@ -190,3 +190,38 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Get user's XP level and badges
+// @route   GET /api/users/profile/xp-badges
+// @access  Private
+exports.getXpAndBadges = async (req, res) => {
+  try {
+    const Badge = require('../models/badge');
+    const { getLevel } = require('../utils/gamification');
+
+    const student = await User.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const badges = await Badge.find({ student: req.user.id }).sort({ unlockedAt: -1 });
+
+    const xp = student.xp || 0;
+    const currentLevel = getLevel(xp);
+    const xpInCurrentLevel = xp % 500;
+    const xpToNextLevel = 500 - xpInCurrentLevel;
+
+    res.json({
+      success: true,
+      data: {
+        xp,
+        currentLevel,
+        xpInCurrentLevel,
+        xpToNextLevel,
+        badges
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

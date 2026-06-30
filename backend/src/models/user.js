@@ -49,6 +49,10 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     default: '' 
   },
+  xp: {
+    type: Number,
+    default: 0
+  },
   faceRegistered: {
     type: Boolean,
     default: false

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import {
   BookOpen, Calendar, FileText, Award,
-  ArrowUpRight, TrendingUp, Clock, Bell, ChevronRight
+  ArrowUpRight, TrendingUp, Clock, Bell, ChevronRight,
+  Trophy, Flame, Target, Star, Zap
 } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -30,19 +31,35 @@ const StudentDashboard = () => {
   const { user } = useSelector(s => s.auth);
   const [stats, setStats] = useState(null);
   const [notices, setNotices] = useState([]);
+  const [xpData, setXpData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const [sr, nr] = await Promise.all([api.get('/analytics/student'), api.get('/notices')]);
+        const [sr, nr, xr] = await Promise.all([
+          api.get('/analytics/student'),
+          api.get('/notices'),
+          api.get('/users/profile/xp-badges')
+        ]);
         setStats(sr.data.data);
         setNotices(nr.data.data.slice(0, 4));
+        setXpData(xr.data.data);
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     };
     fetch();
   }, []);
+
+  const getBadgeIcon = (iconType) => {
+    switch (iconType) {
+      case 'cup': return <Trophy className="h-4.5 w-4.5 text-indigo-650" />;
+      case 'fire': return <Flame className="h-4.5 w-4.5 text-orange-500 animate-pulse" />;
+      case 'target': return <Target className="h-4.5 w-4.5 text-red-500" />;
+      case 'star': return <Star className="h-4.5 w-4.5 text-amber-500 fill-amber-500" />;
+      default: return <Award className="h-4.5 w-4.5 text-indigo-500" />;
+    }
+  };
 
   if (loading) return (
     <div className="flex h-64 items-center justify-center">
@@ -72,11 +89,35 @@ const StudentDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome */}
-      <div className="card p-5 bg-gradient-to-br from-indigo-600 to-indigo-700 border-0 text-white">
-        <p className="text-indigo-200 text-sm font-medium">Good {getGreeting()},</p>
-        <h1 className="text-2xl font-bold mt-0.5">{user?.name || 'Student'} 👋</h1>
-        <p className="text-indigo-200 text-sm mt-1">Here's your academic summary for this semester.</p>
+      {/* Welcome & Gamified Level Header */}
+      <div className="card p-6 bg-gradient-to-br from-indigo-900 to-indigo-950 border-0 text-white relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wider">Good {getGreeting()},</p>
+            <h1 className="text-2xl font-black">{user?.name || 'Student'} 👋</h1>
+            <p className="text-indigo-200 text-xs leading-relaxed max-w-md">Keep track of lessons, complete activities to gain XP and unlock custom academic achievements.</p>
+          </div>
+          
+          {/* XP & Level Indicator */}
+          {xpData && (
+            <div className="w-full md:w-80 bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl space-y-2 shrink-0">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-extrabold flex items-center gap-1">
+                  <Zap className="h-4 w-4 text-amber-400 fill-amber-400" />
+                  Level {xpData.currentLevel}
+                </span>
+                <span className="text-[10px] text-indigo-200 font-semibold">{xpData.xpInCurrentLevel} / 500 XP</span>
+              </div>
+              <div className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full transition-all duration-700"
+                  style={{ width: `${(xpData.xpInCurrentLevel / 500) * 100}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-indigo-200 text-right">Need {xpData.xpToNextLevel} XP to level up!</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -103,25 +144,57 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* Notices */}
-        <div className="card p-5">
-          <div className="section-header">
-            <h3 className="section-title">Notice Board</h3>
-            <Link to="/notices" className="text-xs text-indigo-600 font-semibold hover:underline flex items-center gap-0.5">
-              All <ChevronRight className="h-3 w-3" />
-            </Link>
+        {/* Notices & Achievements Side Panel */}
+        <div className="flex flex-col gap-5">
+          {/* Notices */}
+          <div className="card p-5 flex-1">
+            <div className="section-header">
+              <h3 className="section-title">Notice Board</h3>
+              <Link to="/notices" className="text-xs text-indigo-650 font-semibold hover:underline flex items-center gap-0.5">
+                All <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {notices.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-6">No recent notices</p>
+              ) : notices.map(n => (
+                <div key={n._id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-250 transition-colors">
+                  <span className="badge-blue text-[9px] mb-1">{n.postedBy?.role || 'Admin'}</span>
+                  <p className="text-sm font-semibold text-slate-850 mt-1 line-clamp-1">{n.title}</p>
+                  <p className="text-xs text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">{n.content}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-3">
-            {notices.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-6">No recent notices</p>
-            ) : notices.map(n => (
-              <div key={n._id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-colors">
-                <span className="badge-blue text-[9px] mb-1">{n.postedBy?.role || 'Admin'}</span>
-                <p className="text-sm font-semibold text-slate-800 mt-1 line-clamp-1">{n.title}</p>
-                <p className="text-xs text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">{n.content}</p>
+
+          {/* Badges / Achievements */}
+          {xpData && (
+            <div className="card p-5">
+              <div className="section-header">
+                <h3 className="section-title">Academic Badges</h3>
+                <span className="badge-blue text-[9px] font-bold">{xpData.badges?.length || 0} unlocked</span>
               </div>
-            ))}
-          </div>
+              <div className="space-y-3">
+                {(!xpData.badges || xpData.badges.length === 0) ? (
+                  <p className="text-xs text-slate-400 text-center py-6">Submit tasks & quizzes to earn badges!</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto pr-1">
+                    {xpData.badges.map((badge) => (
+                      <div key={badge._id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 card-hover">
+                        <div className="h-9 w-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                          {getBadgeIcon(badge.iconType)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">{badge.title}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{badge.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

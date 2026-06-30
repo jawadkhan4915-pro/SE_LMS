@@ -295,8 +295,22 @@ const ManageAssignments = () => {
                   <div key={sub._id} className="p-4 bg-slate-950/40 border border-slate-800 rounded-xl space-y-3">
                     <div className="flex items-center justify-between text-xs flex-wrap gap-2">
                       <div className="space-y-0.5">
-                        <p className="font-semibold text-slate-200">{sub.student?.name}</p>
-                        <p className="text-slate-500">Submitted: {new Date(sub.submittedAt).toLocaleString()}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-slate-200">{sub.student?.name}</p>
+                          {sub.plagiarismScore > 15 && (
+                            <span 
+                              className={`px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ${
+                                sub.plagiarismScore > 50 
+                                  ? 'bg-red-500/10 border border-red-500/20 text-red-400' 
+                                  : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
+                              }`} 
+                              title={`Matches:\n${(sub.similarityDetails || []).map(d => `- ${d.studentName}: ${d.score}% match in ${d.fileName}`).join('\n')}`}
+                            >
+                              ⚠️ Similarity: {sub.plagiarismScore}%
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-slate-505">Submitted: {new Date(sub.submittedAt).toLocaleString()}</p>
                       </div>
                       
                       <a 
