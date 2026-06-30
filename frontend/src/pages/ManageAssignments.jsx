@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
-import { FileText, Plus, CheckCircle, Info, ExternalLink, Calendar, Check } from 'lucide-react';
+import { FileText, Plus, CheckCircle, Info, ExternalLink, Calendar, Check, Sparkles } from 'lucide-react';
 
 const ManageAssignments = () => {
   const [courses, setCourses] = useState([]);
@@ -17,6 +17,22 @@ const ManageAssignments = () => {
   const [gradingSubId, setGradingSubId] = useState(null);
   const [grade, setGrade] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const handleAiGrade = async (subId) => {
+    setAiLoading(true);
+    try {
+      const response = await api.post('/ai/grade-submission', {
+        submissionId: subId
+      });
+      setGrade(response.data.suggestedGrade.toString());
+      setFeedback(response.data.feedback);
+    } catch (err) {
+      alert(err.response?.data?.message || 'AI evaluation failed. Please make sure the document contains readable text.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   // Create Assignment form state
   const [isOpen, setIsOpen] = useState(false);
@@ -296,35 +312,52 @@ const ManageAssignments = () => {
 
                     {/* Grading Details or Input */}
                     {gradingSubId === sub._id ? (
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 pt-2 items-end">
-                        <div className="space-y-1">
-                          <label className="text-[10px] text-slate-500 font-bold uppercase">Score (Max 100)</label>
-                          <input
-                            type="number"
-                            className="form-input text-xs py-2"
-                            value={grade}
-                            onChange={(e) => setGrade(e.target.value)}
-                            min="0"
-                            max="100"
-                          />
-                        </div>
-                        <div className="space-y-1 sm:col-span-2 flex gap-2">
-                          <div className="flex-1 space-y-1">
-                            <label className="text-[10px] text-slate-500 font-bold uppercase">Feedback Comments</label>
+                      <div className="space-y-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => handleAiGrade(sub._id)}
+                          disabled={aiLoading}
+                          className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                        >
+                          {aiLoading ? (
+                            <div className="h-3 w-3 animate-spin rounded-full border-t-2 border-teal-400" />
+                          ) : (
+                            <>
+                              <Sparkles className="h-3.5 w-3.5" />
+                              <span>Ask AI Assistant to draft Grade & Feedback</span>
+                            </>
+                          )}
+                        </button>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 items-end">
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-500 font-bold uppercase">Score (Max 100)</label>
                             <input
-                              type="text"
+                              type="number"
                               className="form-input text-xs py-2"
-                              value={feedback}
-                              onChange={(e) => setFeedback(e.target.value)}
-                              placeholder="Good analysis, work on presentation."
+                              value={grade}
+                              onChange={(e) => setGrade(e.target.value)}
+                              min="0"
+                              max="100"
                             />
                           </div>
-                          <button
-                            onClick={() => handleSaveGrade(sub._id)}
-                            className="h-10 w-10 shrink-0 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl flex items-center justify-center font-bold"
-                          >
-                            <Check className="h-5 w-5" />
-                          </button>
+                          <div className="space-y-1 sm:col-span-2 flex gap-2">
+                            <div className="flex-1 space-y-1">
+                              <label className="text-[10px] text-slate-500 font-bold uppercase">Feedback Comments</label>
+                              <input
+                                type="text"
+                                className="form-input text-xs py-2"
+                                value={feedback}
+                                onChange={(e) => setFeedback(e.target.value)}
+                                placeholder="Good analysis, work on presentation."
+                              />
+                            </div>
+                            <button
+                              onClick={() => handleSaveGrade(sub._id)}
+                              className="h-10 w-10 shrink-0 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl flex items-center justify-center font-bold"
+                            >
+                              <Check className="h-5 w-5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : (

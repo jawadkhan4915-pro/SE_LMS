@@ -21,13 +21,13 @@ const storage = multer.diskStorage({
 
 // File type validation
 const fileFilter = (req, file, cb) => {
-  const allowedExtensions = ['.pdf', '.docx', '.doc'];
+  const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt', '.js', '.jsx', '.py', '.java', '.cpp', '.c', '.h', '.json', '.md'];
   const ext = path.extname(file.originalname).toLowerCase();
   
   if (allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only PDF and Word documents (.doc, .docx) are allowed.'), false);
+    cb(new Error('Invalid file type. Only PDF, Word documents, text, and coding files are allowed.'), false);
   }
 };
 

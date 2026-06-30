@@ -4,6 +4,7 @@ const Notice = require('../models/notice');
 const Enrollment = require('../models/enrollment');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { getDepartmentFullName } = require('../utils/departmentHelper');
+const { extractTextFromFile } = require('../utils/fileExtractor');
 
 /**
  * Builds dynamic system prompt context depending on the user's role and database information.
@@ -208,5 +209,86 @@ exports.chatWithAI = async (req, res) => {
   } catch (error) {
     console.error('LMS AI Chat Error:', error);
     res.status(500).json({ success: false, message: 'AI Agent encountered an error: ' + error.message });
+  }
+};
+
+// Helper to extract text from a file is now imported from utils/fileExtractor
+
+exports.gradeSubmission = async (req, res) => {
+  const { submissionId, rubric } = req.body;
+
+  try {
+    const submission = await Submission.findById(submissionId)
+      .populate('student', 'name email')
+      .populate({
+        path: 'assignment',
+        populate: { path: 'course', select: 'name code' }
+      });
+
+    if (!submission) {
+      return res.status(404).json({ success: false, message: 'Submission not found' });
+    }
+
+    const assignment = submission.assignment;
+    if (!assignment) {
+      return res.status(404).json({ success: false, message: 'Associated assignment not found' });
+    }
+
+    // Extract text from submission file
+    let submissionContent = '';
+    try {
+      submissionContent = await extractTextFromFile(submission.fileUrl);
+    } catch (err) {
+      submissionContent = `Error loading file contents: ${err.message}`;
+    }
+
+    // Call Gemini to grade the submission
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ success: false, message: 'Gemini API key is missing in server environment variables' });
+    }
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const prompt = `
+You are an expert academic evaluator. You are grading an assignment submission.
+Here are the assignment details:
+- Title: ${assignment.title}
+- Description: ${assignment.description}
+${rubric ? `- Grading Rubric/Criteria: ${rubric}` : ''}
+
+Here are the details of the student submission:
+- Student Name: ${submission.student?.name}
+- Submitted File: ${submission.fileName}
+- Submission Content:
+"""
+${submissionContent.substring(0, 15000)}
+"""
+
+Please grade this submission. Your output must be a valid JSON object with the following fields:
+1. "suggestedGrade": an integer score between 0 and 100 representing the grade.
+2. "feedback": a detailed markdown-formatted feedback comment highlighting strengths, weaknesses, and key areas of improvement (max 4-5 sentences, professional and encouraging).
+
+Output ONLY the JSON object, do not wrap it in markdown code blocks like \`\`\`json.
+`;
+
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    
+    // Clean up code block backticks if Gemini includes them
+    if (text.startsWith('```')) {
+      text = text.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+    }
+
+    const evaluation = JSON.parse(text);
+
+    res.json({
+      success: true,
+      suggestedGrade: evaluation.suggestedGrade,
+      feedback: evaluation.feedback
+    });
+  } catch (error) {
+    console.error('AI Grading Assistant Error:', error);
+    res.status(500).json({ success: false, message: 'AI Grading failed: ' + error.message });
   }
 };

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Provider } from 'react-redux';
 import { store } from './store';
 import ProtectedRoute from './routes/ProtectedRoute';
+import { SocketProvider } from './components/SocketProvider';
 
 // Layout & Pages
 import MainLayout from './layouts/MainLayout';
@@ -63,7 +64,8 @@ function App() {
 
   return (
     <Provider store={store}>
-      <Router>
+      <SocketProvider>
+        <Router>
         <Routes>
           {/* Public Authentication Screens */}
           <Route path="/login" element={<Login />} />
@@ -336,6 +338,7 @@ function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
+      </SocketProvider>
     </Provider>
   );
 }
