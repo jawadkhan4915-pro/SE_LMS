@@ -81,7 +81,10 @@ const seedDemoAccounts = async () => {
       { name: 'Demo Admin', email: 'admin@lms.edu', password: 'password123', role: 'admin', phone: '+92 302 1234567' },
 
       // General Exam Department (University-wide Exam Department)
-      { name: 'University Exam Coordinator', email: 'uni_coordinator@lms.edu', password: 'password123', role: 'coordinator', phone: '+92 304 5555555' }
+      { name: 'University Exam Coordinator', email: 'uni_coordinator@lms.edu', password: 'password123', role: 'coordinator', phone: '+92 304 5555555' },
+
+      // Accountant User (University-wide Accounts Department)
+      { name: 'Demo Accountant', email: 'accountant@lms.edu', password: 'password123', role: 'accountant', phone: '+92 305 1234567' }
     ];
 
     const usersMap = {};

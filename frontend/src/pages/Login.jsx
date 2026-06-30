@@ -37,6 +37,7 @@ const demoDepartments = {
   Admin: [
     { role: 'Univ Admin', name: 'Demo Admin', email: 'admin@lms.edu', pass: 'password123', color: 'amber', icon: '🛡️' },
     { role: 'Univ Exam', name: 'Univ Exam Coord', email: 'uni_coordinator@lms.edu', pass: 'password123', color: 'purple', icon: '⚖️' },
+    { role: 'Accountant', name: 'Demo Accountant', email: 'accountant@lms.edu', pass: 'password123', color: 'teal', icon: '💰' },
   ]
 };
 
