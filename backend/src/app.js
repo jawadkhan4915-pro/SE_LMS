@@ -118,8 +118,25 @@ const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
 
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`[Server Error] Port ${PORT} is already in use. Nodemon will retry on next file change, or terminate the process using port ${PORT}.`);
+  } else {
+    console.error('[Server Error]', err);
+  }
+});
+
 // Initialize Socket.io
 const { init: initSocket } = require('./utils/socket');
 initSocket(server);
+
+// Handle Unhandled Errors to Prevent Nodemon Crashes
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Unhandled Rejection]', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Uncaught Exception]', err);
+});
 
 module.exports = app; // For testing
