@@ -65,6 +65,30 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     default: '' 
   },
+  rollNo: {
+    type: String,
+    default: ''
+  },
+  cnic: {
+    type: String,
+    default: ''
+  },
+  emergencyContact: {
+    type: String,
+    default: ''
+  },
+  address: {
+    type: String,
+    default: ''
+  },
+  authoritySignature: {
+    type: String,
+    default: ''
+  },
+  cardValidTill: {
+    type: String,
+    default: '2028-07-05'
+  },
   resetPasswordToken: String,
   resetPasswordExpires: Date
 }, { timestamps: true });

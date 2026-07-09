@@ -65,6 +65,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/slips', label: 'Slips & Vouchers', icon: CreditCard },
           { path: '/lectures', label: 'Online Lectures', icon: Video },
           { path: '/timetable', label: 'Class Timetable', icon: Calendar },
+          { path: '/virtual-card', label: 'Virtual ID Card', icon: CreditCard },
         ];
       case 'teacher':
         return [
@@ -78,6 +79,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           { path: '/results/upload', label: 'Manage Exam Results', icon: GraduationCap },
           { path: '/lectures', label: 'Online Lectures', icon: Video },
           { path: '/timetable', label: 'Class Timetable', icon: Calendar },
+          { path: '/virtual-card', label: 'Virtual ID Card', icon: CreditCard },
         ];
       case 'hod':
         return [

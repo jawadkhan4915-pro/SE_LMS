@@ -38,6 +38,8 @@ import OnlineLectures from './pages/OnlineLectures';
 import LectureRoom from './pages/LectureRoom';
 import Timetable from './pages/Timetable';
 import AIAssistant from './pages/AIAssistant';
+import VirtualCard from './pages/VirtualCard';
+import PublicCardVerification from './pages/PublicCardVerification';
 
 // Admin / HOD Pages
 import ManageUsers from './pages/ManageUsers';
@@ -74,6 +76,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/verify/card/:userId" element={<PublicCardVerification />} />
 
           {/* Fullscreen Secure Lecture Room (Distraction-free) */}
           <Route 
@@ -110,6 +113,16 @@ function App() {
             
             {/* Online Lectures List */}
             <Route path="lectures" element={<OnlineLectures />} />
+
+            {/* Shared Virtual Card */}
+            <Route 
+              path="virtual-card" 
+              element={
+                <ProtectedRoute allowedRoles={['student', 'teacher']}>
+                  <VirtualCard />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Timetable View */}
             <Route 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import {
-  Users, Plus, Trash2, Search, ChevronLeft, ChevronRight, CheckCircle, X, UserPlus
+  Users, Plus, Trash2, Search, ChevronLeft, ChevronRight, CheckCircle, X, UserPlus, CreditCard, FileText, Upload, Download
 } from 'lucide-react';
 
 const roleBadge = {
@@ -30,6 +30,21 @@ const ManageUsers = () => {
   const [phone, setPhone] = useState('');
   const [department, setDepartment] = useState('SE');
   const [departments, setDepartments] = useState([]);
+
+  // Card & documents states
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [cardRollNo, setCardRollNo] = useState('');
+  const [cardCnic, setCardCnic] = useState('');
+  const [cardEmergency, setCardEmergency] = useState('');
+  const [cardAddress, setCardAddress] = useState('');
+  const [cardSignature, setCardSignature] = useState('');
+  const [cardValid, setCardValid] = useState('');
+  const [cardDocs, setCardDocs] = useState([]);
+  const [loadingCard, setLoadingCard] = useState(false);
+  const [adminTitle, setAdminTitle] = useState('');
+  const [adminFile, setAdminFile] = useState(null);
+  const [uploadingAdminDoc, setUploadingAdminDoc] = useState(false);
 
   const fetchDepartments = async () => {
     try {
@@ -92,6 +107,96 @@ const ManageUsers = () => {
       showMsg('User deleted.');
       fetchUsers();
     } catch (e) { console.error(e); }
+  };
+
+  const handleManageCard = async (u) => {
+    setSelectedUser(u);
+    setIsCardModalOpen(true);
+    setLoadingCard(true);
+    setCardRollNo(u.rollNo || '');
+    setCardCnic(u.cnic || '');
+    setCardEmergency(u.emergencyContact || '');
+    setCardAddress(u.address || '');
+    setCardSignature(u.authoritySignature || '');
+    setCardValid(u.cardValidTill || '2028-07-05');
+    setCardDocs([]);
+
+    try {
+      const res = await api.get(`/virtual-card/public/${u._id}`);
+      setCardRollNo(res.data.data.card.rollNo || '');
+      setCardCnic(res.data.data.card.cnic || '');
+      setCardEmergency(res.data.data.card.emergencyContact || '');
+      setCardAddress(res.data.data.card.address || '');
+      setCardSignature(res.data.data.card.authoritySignature || '');
+      setCardValid(res.data.data.card.cardValidTill || '2028-07-05');
+      setCardDocs(res.data.data.documents || []);
+    } catch (e) {
+      console.error('Failed to load card details', e);
+    } finally {
+      setLoadingCard(false);
+    }
+  };
+
+  const handleSaveCardFields = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/users/${selectedUser._id}`, {
+        rollNo: cardRollNo,
+        cnic: cardCnic,
+        emergencyContact: cardEmergency,
+        address: cardAddress,
+        authoritySignature: cardSignature,
+        cardValidTill: cardValid
+      });
+      showMsg('Card details saved successfully!');
+      
+      // Update local users array so updates show in list
+      setUsers(prev => prev.map(usr => usr._id === selectedUser._id ? {
+        ...usr,
+        rollNo: cardRollNo,
+        cnic: cardCnic,
+        emergencyContact: cardEmergency,
+        address: cardAddress,
+        authoritySignature: cardSignature,
+        cardValidTill: cardValid
+      } : usr));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to save card details');
+    }
+  };
+
+  const handleAdminDocUpload = async (e) => {
+    e.preventDefault();
+    if (!adminFile) return;
+    setUploadingAdminDoc(true);
+    const formData = new FormData();
+    formData.append('title', adminTitle);
+    formData.append('file', adminFile);
+
+    try {
+      const res = await api.post(`/virtual-card/admin/upload/${selectedUser._id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setCardDocs(prev => [res.data.data, ...prev]);
+      setAdminTitle('');
+      setAdminFile(null);
+      showMsg('Official Document issued successfully!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to upload document');
+    } finally {
+      setUploadingAdminDoc(false);
+    }
+  };
+
+  const handleDeleteAdminDoc = async (docId) => {
+    if (!window.confirm('Delete this official document?')) return;
+    try {
+      await api.delete(`/virtual-card/admin/documents/${docId}`);
+      setCardDocs(prev => prev.filter(d => d._id !== docId));
+      showMsg('Document deleted.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete document');
+    }
   };
 
   if (loading && page === 1 && !search) return (
@@ -185,12 +290,22 @@ const ManageUsers = () => {
                     {u.role === 'student' ? `Semester ${u.semester} (Sec ${u.section || 'A'})` : u.phone || '—'}
                   </td>
                   <td className="table-td">
-                    <button
-                      onClick={() => handleDelete(u._id)}
-                      className="h-7 w-7 rounded-lg border border-red-200 bg-red-50 text-red-400 hover:bg-red-100 flex items-center justify-center transition-colors"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex gap-2 justify-start items-center">
+                      <button
+                        onClick={() => handleManageCard(u)}
+                        className="h-7 w-7 rounded-lg border border-indigo-250 bg-indigo-50 text-indigo-650 hover:bg-indigo-100 flex items-center justify-center transition-colors"
+                        title="Manage Card & Docs"
+                      >
+                        <CreditCard className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(u._id)}
+                        className="h-7 w-7 rounded-lg border border-red-200 bg-red-50 text-red-400 hover:bg-red-100 flex items-center justify-center transition-colors"
+                        title="Delete User"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -301,6 +416,192 @@ const ManageUsers = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Admin Card & Documents Management Modal */}
+      {isCardModalOpen && selectedUser && (
+        <div className="modal-overlay z-40" onClick={() => setIsCardModalOpen(false)}>
+          <div className="modal-box max-w-2xl bg-white text-slate-800" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">Manage Card & Official Documents</h3>
+                <p className="text-xs text-slate-400 mt-0.5">User: {selectedUser.name} ({selectedUser.role})</p>
+              </div>
+              <button type="button" onClick={() => setIsCardModalOpen(false)} className="btn-secondary btn-icon">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-6 max-h-[70vh] overflow-y-auto">
+              
+              {/* Form 1: Card Fields Settings */}
+              <form onSubmit={handleSaveCardFields} className="space-y-4 border-b border-slate-100 pb-6">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-indigo-900">Virtual Card Properties</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="form-label text-[10px]">Roll No / Teacher ID</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. SWEN241101017" 
+                      className="form-input text-xs" 
+                      value={cardRollNo} 
+                      onChange={e => setCardRollNo(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label text-[10px]">CNIC Number</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 31301-8039182-3" 
+                      className="form-input text-xs" 
+                      value={cardCnic} 
+                      onChange={e => setCardCnic(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label text-[10px]">Emergency Phone</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 0306-1389233" 
+                      className="form-input text-xs" 
+                      value={cardEmergency} 
+                      onChange={e => setCardEmergency(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label text-[10px]">Authority Signature Text</label>
+                    <input 
+                      type="text" 
+                      placeholder="Stylized signature name" 
+                      className="form-input font-signature text-sm" 
+                      value={cardSignature} 
+                      onChange={e => setCardSignature(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label text-[10px]">Card Valid Till</label>
+                    <input 
+                      type="text" 
+                      placeholder="2028-07-05" 
+                      className="form-input text-xs" 
+                      value={cardValid} 
+                      onChange={e => setCardValid(e.target.value)} 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="form-label text-[10px]">Home Address</label>
+                    <textarea 
+                      rows={2} 
+                      placeholder="Full Address" 
+                      className="form-input text-xs" 
+                      value={cardAddress} 
+                      onChange={e => setCardAddress(e.target.value)} 
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <button type="submit" className="btn-primary py-1.5 px-4 text-xs font-bold">
+                    Save Properties
+                  </button>
+                </div>
+              </form>
+
+              {/* Form 2: Issue Official University Document */}
+              <form onSubmit={handleAdminDocUpload} className="space-y-4 border-b border-slate-100 pb-6">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 flex items-center gap-1">
+                  <Upload className="h-3.5 w-3.5" />
+                  Issue Official University Document
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="form-label text-[10px]">Document Title *</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Official Transcript / Admission Letter" 
+                      className="form-input text-xs" 
+                      value={adminTitle} 
+                      onChange={e => setAdminTitle(e.target.value)} 
+                      required 
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label text-[10px]">File * (PDF or Image)</label>
+                    <input 
+                      type="file" 
+                      accept=".pdf,.png,.jpg,.jpeg,.webp,.docx" 
+                      className="form-input text-xs py-1" 
+                      onChange={e => setAdminFile(e.target.files[0])} 
+                      required 
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <button 
+                    type="submit" 
+                    disabled={uploadingAdminDoc || !adminFile}
+                    className="btn-primary py-1.5 px-4 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 border-emerald-600"
+                  >
+                    {uploadingAdminDoc ? 'Uploading...' : 'Issue Document'}
+                  </button>
+                </div>
+              </form>
+
+              {/* List: Existing Card Documents */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">Currently Linked Card Documents</h4>
+                {loadingCard ? (
+                  <p className="text-xs text-slate-400">Loading documents...</p>
+                ) : cardDocs.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No files linked to this card's QR code.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {cardDocs.map(doc => (
+                      <div key={doc._id} className="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-slate-50 text-xs">
+                        <div className="flex items-center gap-3">
+                          <FileText className={`h-4.5 w-4.5 ${doc.uploadedByRole === 'university' ? 'text-emerald-500' : 'text-indigo-500'}`} />
+                          <div>
+                            <p className="font-bold text-slate-800 leading-tight">{doc.title}</p>
+                            <span className={`text-[8.5px] uppercase font-bold ${doc.uploadedByRole === 'university' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                              {doc.uploadedByRole === 'university' ? 'University Issued' : 'User Uploaded'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <a 
+                            href={`${apiBase.replace('/api', '')}${doc.fileUrl}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="h-7 w-7 rounded-lg border border-slate-200 bg-white text-slate-550 flex items-center justify-center hover:bg-slate-100"
+                            title="Download"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </a>
+                          <button 
+                            onClick={() => handleDeleteAdminDoc(doc._id)}
+                            className="h-7 w-7 rounded-lg border border-red-200 bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 p-5 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
+              <button type="button" onClick={() => setIsCardModalOpen(false)} className="btn-secondary w-full py-2 text-xs font-bold">
+                Close Settings
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

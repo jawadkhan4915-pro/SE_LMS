@@ -29,6 +29,7 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const teacherAttendanceRoutes = require('./routes/teacherAttendanceRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const discussionRoutes = require('./routes/discussionRoutes');
+const virtualCardRoutes = require('./routes/virtualCardRoutes');
 
 // Initialize app
 const app = express();
@@ -96,6 +97,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/attendance/teacher', teacherAttendanceRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/discussions', discussionRoutes);
+app.use('/api/virtual-card', virtualCardRoutes);
 
 // Root route status check
 app.get('/health', (req, res) => {
