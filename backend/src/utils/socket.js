@@ -3,9 +3,12 @@ const socketIo = require('socket.io');
 let io;
 
 const init = (server) => {
+  // Restrict Socket.io CORS to the frontend URL in production
+  const socketOrigin = process.env.FRONTEND_URL || '*';
+
   io = socketIo(server, {
     cors: {
-      origin: '*',
+      origin: socketOrigin,
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       credentials: true
     }
