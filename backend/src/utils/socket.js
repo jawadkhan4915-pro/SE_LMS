@@ -3,12 +3,25 @@ const socketIo = require('socket.io');
 let io;
 
 const init = (server) => {
-  // Restrict Socket.io CORS to the frontend URL in production
-  const socketOrigin = process.env.FRONTEND_URL || '*';
+  const defaultOrigins = [
+    'https://university-lms-rho.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
+  const envOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+    : [];
+  const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
 
   io = socketIo(server, {
     cors: {
-      origin: socketOrigin,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const cleanOrigin = origin.replace(/\/$/, '');
+        const isAllowed = allowedOrigins.some(allowed => allowed.replace(/\/$/, '') === cleanOrigin);
+        if (isAllowed) return callback(null, true);
+        callback(new Error('CORS not allowed for Socket.IO'));
+      },
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       credentials: true
     }
