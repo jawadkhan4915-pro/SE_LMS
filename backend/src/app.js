@@ -34,6 +34,8 @@ const virtualCardRoutes = require('./routes/virtualCardRoutes');
 // Initialize app
 const app = express();
 
+// Trust proxy (required for Render / reverse proxies to enable express-rate-limit & X-Forwarded-For)
+app.set('trust proxy', 1);
 
 // Connect to Database
 connectDB();
