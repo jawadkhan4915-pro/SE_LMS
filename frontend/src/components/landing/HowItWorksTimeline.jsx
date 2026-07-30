@@ -6,61 +6,66 @@ import {
   Laptop, 
   Award,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Crown
 } from 'lucide-react';
 
 const steps = [
   {
     number: '01',
-    title: 'Account Registration & Role Assignment',
+    title: 'Account Registration & Role Scope',
     description: 'Students, faculty, and administrative staff create verified portal accounts. HODs approve student course enrollments and assign role security scopes.',
     icon: UserPlus,
-    badge: 'Step 1: Onboarding',
-    color: 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50'
+    badge: 'Phase 1: Onboarding',
+    borderColor: '#f59e0b',
+    iconStyle: 'border-amber-500/40 text-amber-300 bg-amber-500/10'
   },
   {
     number: '02',
     title: 'Smart Timetable & Course Access',
-    description: 'Access conflict-free semester schedules, room allocations, syllabus blueprints, and digital learning resource repositories instantly from any device.',
+    description: 'Access conflict-free semester schedules, room allocations, syllabus blueprints, and digital learning resource repositories instantly.',
     icon: BookOpen,
-    badge: 'Step 2: Workspace',
-    color: 'border-sky-500 text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/50'
+    borderColor: '#0ea5e9',
+    badge: 'Phase 2: Workspace',
+    iconStyle: 'border-sky-500/40 text-sky-300 bg-sky-500/10'
   },
   {
     number: '03',
     title: 'Live Lectures, Quizzes & AI Assistance',
     description: 'Attend secure virtual lecture halls, take timed quizzes, submit coding assignments, and get immediate 24/7 help from the department AI assistant.',
     icon: Laptop,
-    badge: 'Step 3: Engagement',
-    color: 'border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50'
+    borderColor: '#6366f1',
+    badge: 'Phase 3: Engagement',
+    iconStyle: 'border-indigo-500/40 text-indigo-300 bg-indigo-500/10'
   },
   {
     number: '04',
-    title: 'Attendance, Sessional Marks & QR ID Verification',
+    title: 'Attendance, Sessional & QR ID Verification',
     description: 'Track sessional performance in real-time, view verified monthly attendance percentages, and present cryptographically signed Virtual ID Cards.',
     icon: Award,
-    badge: 'Step 4: Completion',
-    color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50'
+    borderColor: '#10b981',
+    badge: 'Phase 4: Distinction',
+    iconStyle: 'border-emerald-500/40 text-emerald-300 bg-emerald-500/10'
   }
 ];
 
 export default function HowItWorksTimeline() {
   return (
-    <section id="how-it-works" className="py-24 relative bg-slate-50/60 dark:bg-slate-900/40">
+    <section id="how-it-works" className="py-24 relative bg-slate-950/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Department Workflow
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-extrabold uppercase tracking-wider">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Department Workflow
           </div>
           
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            How SE-LMS Simplifies Campus Life
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+            How SE-LMS Delivers Academic Excellence
           </h2>
           
-          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300">
-            From first-day student registration to final sessional marks — a seamless digital pipeline for software engineering academic operations.
+          <p className="text-base sm:text-lg text-slate-300">
+            From first-day registration to final sessional marks — a seamless digital pipeline for software engineering academic operations.
           </p>
         </div>
 
@@ -76,36 +81,36 @@ export default function HowItWorksTimeline() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="card card-hover p-6 flex flex-col justify-between relative group border-t-4"
-                style={{ borderTopColor: index === 0 ? '#4f46e5' : index === 1 ? '#0ea5e9' : index === 2 ? '#f59e0b' : '#10b981' }}
+                className="bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 flex flex-col justify-between relative group border border-slate-800 hover:border-amber-500/40 shadow-xl transition-all duration-300 border-t-4"
+                style={{ borderTopColor: step.borderColor }}
               >
                 <div>
                   {/* Top Step Number Badge + Icon */}
                   <div className="flex items-center justify-between mb-5">
-                    <span className="text-3xl font-black text-slate-300 dark:text-slate-700 font-mono group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <span className="text-3xl font-black text-slate-700 font-mono group-hover:text-amber-300 transition-colors">
                       {step.number}
                     </span>
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${step.color}`}>
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${step.iconStyle}`}>
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
 
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 mb-2 block">
                     {step.badge}
                   </span>
 
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-snug">
+                  <h3 className="text-lg font-extrabold text-white mb-2 leading-snug">
                     {step.title}
                   </h3>
 
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
                     {step.description}
                   </p>
                 </div>
 
                 {/* Arrow Connector on Desktop */}
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-20 text-slate-300 dark:text-slate-700">
+                  <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-20 text-slate-700">
                     <ArrowRight className="w-6 h-6" />
                   </div>
                 )}

@@ -6,7 +6,8 @@ import {
   Users, 
   ShieldCheck, 
   Bot, 
-  Activity 
+  Activity,
+  Crown 
 } from 'lucide-react';
 
 const stats = [
@@ -44,24 +45,24 @@ const stats = [
 
 export default function StatsSection() {
   return (
-    <section id="stats" className="py-20 relative bg-indigo-950 text-white overflow-hidden">
+    <section id="stats" className="py-20 relative bg-slate-950 text-white overflow-hidden border-y border-amber-500/20">
       
       {/* Background Subtle Gradient Blobs */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-600/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Title */}
         <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-indigo-200 border border-white/15 text-xs font-bold uppercase tracking-wider">
-            <Zap className="w-3.5 h-3.5 text-sky-400" /> Platform Metrics
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 text-xs font-extrabold uppercase tracking-wider">
+            <Crown className="w-4 h-4 text-amber-400" /> Platform Benchmark
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            Built for Academic Scale & Reliability
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
+            Built for Academic Scale & Distinction
           </h2>
           <p className="text-slate-300 text-sm sm:text-base">
-            Modern software engineering department operations consolidated under one secure portal.
+            Consolidating modern software engineering department operations into one secure, high-performance portal.
           </p>
         </div>
 
@@ -76,21 +77,21 @@ export default function StatsSection() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, delay: i * 0.08 }}
-                className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-sky-400/40 transition-all duration-200 group flex flex-col justify-between"
+                className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 hover:border-amber-500/40 transition-all duration-200 group flex flex-col justify-between shadow-xl"
               >
                 <div>
-                  <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight font-sans">
+                  <h3 className="text-3xl sm:text-4xl font-black text-amber-300 tracking-tight font-sans">
                     {stat.value}
                   </h3>
-                  <p className="text-sm font-bold text-sky-300 mt-1">
+                  <p className="text-sm font-extrabold text-white mt-1">
                     {stat.label}
                   </p>
                 </div>
                 
-                <p className="text-xs text-slate-300/80 mt-3 pt-3 border-t border-white/10 leading-relaxed">
+                <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-800/80 leading-relaxed">
                   {stat.detail}
                 </p>
               </motion.div>
