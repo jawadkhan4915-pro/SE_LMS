@@ -144,16 +144,16 @@ const Sidebar = ({ isOpen = false, setIsOpen }) => {
       }`}
     >
       {/* Brand Header */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-amber-500/20">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-400 via-amber-500 to-indigo-600 shadow-md">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-amber-500/20">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-400 via-amber-500 to-indigo-600 shadow-md shrink-0">
           <GraduationCap className="h-6 w-6 text-slate-950" />
         </div>
-        <div className="overflow-hidden">
-          <div className="flex items-center gap-1.5">
-            <h1 className="font-black text-white text-base leading-tight">
+        <div className="overflow-hidden min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h1 className="font-black text-white text-base leading-tight truncate">
               {(user?.role === 'admin' || user?.role === 'accountant' || (user?.role === 'coordinator' && !user?.department)) ? 'Uni-LMS' : `${user?.department || 'SE'}-LMS`}
             </h1>
-            <Crown className="w-3.5 h-3.5 text-amber-400" />
+            <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           </div>
           <p className="text-amber-300 text-[10px] font-semibold truncate">
             {user?.role === 'admin' ? 'University Admin' : (user?.role === 'accountant' ? 'University Accounts Dept' : (user?.role === 'coordinator' && !user?.department ? 'University Exam Dept' : `${getDepartmentFullName(user?.department)} Dept`))}
@@ -166,9 +166,9 @@ const Sidebar = ({ isOpen = false, setIsOpen }) => {
         <div className={`flex h-9 w-9 items-center justify-center rounded-full ${rc.bg} ${rc.text} font-black text-xs flex-shrink-0 border border-amber-500/30`}>
           {initials}
         </div>
-        <div className="overflow-hidden min-w-0">
+        <div className="overflow-hidden min-w-0 flex-1">
           <p className="text-xs font-bold text-white truncate">{user?.name || 'User'}</p>
-          <span className={`text-[9px] font-extrabold uppercase tracking-wider ${rc.text}`}>
+          <span className={`text-[9px] font-extrabold uppercase tracking-wider ${rc.text} truncate block`}>
             {user?.role || 'User'}
           </span>
         </div>
@@ -189,14 +189,14 @@ const Sidebar = ({ isOpen = false, setIsOpen }) => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 ${
                   isActive
-                    ? 'bg-amber-500/15 text-amber-300 font-extrabold border-l-2 border-amber-400'
+                    ? 'bg-amber-500/15 text-amber-300 font-extrabold border-l-2 border-amber-400 shadow-xs'
                     : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                 }`
               }
             >
               {Icon && <Icon className="h-4 w-4 shrink-0 opacity-80" />}
-              <span className="flex-1">{item.label}</span>
-              <ChevronRight className="h-3 w-3 opacity-40" />
+              <span className="flex-1 truncate">{item.label}</span>
+              <ChevronRight className="h-3 w-3 opacity-40 shrink-0" />
             </NavLink>
           );
         })}
