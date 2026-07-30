@@ -35,14 +35,20 @@ const roleColors = {
   accountant: { bg: 'bg-sky-500/20', text: 'text-sky-300' },
 };
 
-const Sidebar = ({ isOpen, setIsOpen }) => {
-  const { user } = useSelector((state) => state.auth);
+const Sidebar = ({ isOpen = false, setIsOpen }) => {
+  const { user } = useSelector((state) => state.auth || {});
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate('/login');
+  };
+
+  const closeSidebarMobile = () => {
+    if (window.innerWidth < 1024 && typeof setIsOpen === 'function') {
+      setIsOpen(false);
+    }
   };
 
   const getLinksByRole = () => {
@@ -125,8 +131,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   };
 
   const menuItems = getLinksByRole();
-  const rc = roleColors[user?.role] || roleColors.student;
-  const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'U';
+  const rc = (user?.role && roleColors[user.role]) ? roleColors[user.role] : roleColors.student;
+  
+  const initials = user?.name 
+    ? user.name.trim().split(/\s+/).filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() 
+    : 'U';
 
   return (
     <aside
@@ -160,7 +169,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <div className="overflow-hidden min-w-0">
           <p className="text-xs font-bold text-white truncate">{user?.name || 'User'}</p>
           <span className={`text-[9px] font-extrabold uppercase tracking-wider ${rc.text}`}>
-            {user?.role}
+            {user?.role || 'User'}
           </span>
         </div>
       </div>
@@ -176,7 +185,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <NavLink
               key={item.path}
               to={item.path}
-              onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
+              onClick={closeSidebarMobile}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 ${
                   isActive
@@ -185,7 +194,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 }`
               }
             >
-              <Icon className="h-4 w-4 shrink-0 opacity-80" />
+              {Icon && <Icon className="h-4 w-4 shrink-0 opacity-80" />}
               <span className="flex-1">{item.label}</span>
               <ChevronRight className="h-3 w-3 opacity-40" />
             </NavLink>

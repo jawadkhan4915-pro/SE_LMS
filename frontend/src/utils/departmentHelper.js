@@ -5,8 +5,10 @@ export const getDepartmentFullName = (dep) => {
     const cached = localStorage.getItem('departments');
     if (cached) {
       const depts = JSON.parse(cached);
-      const found = depts.find(d => d.code === dep);
-      if (found) return found.name;
+      if (Array.isArray(depts)) {
+        const found = depts.find(d => d && d.code === dep);
+        if (found && found.name) return found.name;
+      }
     }
   } catch (err) {
     console.error('Error reading departments from localStorage:', err);
