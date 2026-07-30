@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   GraduationCap, 
-  Sun, 
-  Moon, 
   Menu, 
   X, 
   ArrowRight,
-  Crown,
-  Sparkles 
+  Crown 
 } from 'lucide-react';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +23,13 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogoClick = (e) => {
+    if (location.pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const navLinks = [
     { name: 'Capabilities', href: '#features' },
@@ -43,7 +50,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           
           {/* Logo & Department Branding */}
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" onClick={handleLogoClick} className="flex items-center gap-3 group">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 via-indigo-600 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200 border border-amber-400/30">
               <GraduationCap className="w-6 h-6 text-amber-200" />
             </div>
@@ -79,15 +86,15 @@ export default function Navbar() {
           {/* Right Action Controls */}
           <div className="hidden md:flex items-center gap-3.5">
             <button
-              onClick={() => useNavigate('/login')}
-              className="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-200 hover:text-white bg-slate-900/80 border border-slate-700/80 hover:border-amber-500/40 transition-all duration-200"
+              onClick={() => navigate('/login')}
+              className="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-200 hover:text-white bg-slate-900/80 border border-slate-700/80 hover:border-amber-500/40 transition-all duration-200 cursor-pointer"
             >
               Login
             </button>
 
             <button
-              onClick={() => useNavigate('/register')}
-              className="px-6 py-2.5 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-lg shadow-amber-500/25 transition-all duration-200 flex items-center gap-2 group"
+              onClick={() => navigate('/register')}
+              className="px-6 py-2.5 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-lg shadow-amber-500/25 transition-all duration-200 flex items-center gap-2 group cursor-pointer"
             >
               <span>Get Started</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -127,18 +134,18 @@ export default function Navbar() {
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                useNavigate('/login');
+                navigate('/login');
               }}
-              className="w-full py-3 rounded-xl font-bold text-sm text-slate-200 bg-slate-900 border border-slate-800"
+              className="w-full py-3 rounded-xl font-bold text-sm text-slate-200 bg-slate-900 border border-slate-800 cursor-pointer"
             >
               Login
             </button>
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                useNavigate('/register');
+                navigate('/register');
               }}
-              className="w-full py-3 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 justify-center flex items-center gap-2"
+              className="w-full py-3 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 justify-center flex items-center gap-2 cursor-pointer"
             >
               <span>Get Started</span>
               <ArrowRight className="w-4 h-4" />

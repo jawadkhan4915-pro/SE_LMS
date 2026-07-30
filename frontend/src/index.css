@@ -92,13 +92,13 @@
 
   /* ─── BUTTONS ─── */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
   .btn-primary {
-    @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-sm;
+    @apply btn bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-slate-950 font-extrabold hover:from-amber-300 hover:to-amber-400 focus:ring-amber-400 shadow-md shadow-amber-500/20 cursor-pointer;
   }
   .btn-secondary {
-    @apply btn bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 focus:ring-slate-300;
+    @apply btn bg-slate-900 text-slate-100 border border-slate-700 hover:border-amber-400/40 hover:bg-slate-800 focus:ring-amber-400 cursor-pointer;
   }
   .btn-danger {
     @apply btn bg-red-500 text-white hover:bg-red-600 focus:ring-red-400;
