@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 import Navbar from '../components/landing/Navbar';
-import Hero3DCanvas from '../components/landing/Hero3DCanvas';
+import HeroCampusVisual from '../components/landing/HeroCampusVisual';
 import BentoGrid from '../components/landing/BentoGrid';
 import RoleTabs from '../components/landing/RoleTabs';
 import HowItWorksTimeline from '../components/landing/HowItWorksTimeline';
@@ -111,30 +111,14 @@ export default function LandingPage() {
 
             </motion.div>
 
-            {/* Right Column: 3D Canvas Scene */}
+            {/* Right Column: Oxford Campus Hero Visual */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="lg:col-span-5 h-[380px] sm:h-[450px] lg:h-[520px] relative rounded-3xl overflow-hidden border border-indigo-100/50 dark:border-slate-800/80 bg-gradient-to-b from-indigo-500/5 via-sky-500/5 to-transparent backdrop-blur-xs"
+              className="lg:col-span-5"
             >
-              <Hero3DCanvas />
-              
-              {/* Floating Badge overlay on 3D scene */}
-              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200 shadow-lg pointer-events-none">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center">
-                    <BookOpen className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-slate-900 dark:text-white font-extrabold">Active Department Portal</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">Real-time Sessional & Lecture Sync</p>
-                  </div>
-                </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                  Live Online
-                </span>
-              </div>
+              <HeroCampusVisual />
             </motion.div>
 
           </div>
