@@ -55,6 +55,28 @@ import AccountantSalaries from './pages/AccountantSalaries';
 import AccountantExpenses from './pages/AccountantExpenses';
 import AccountantLedger from './pages/AccountantLedger';
 
+import LandingPage from './pages/LandingPage';
+import { useSelector } from 'react-redux';
+
+// Public Landing Route Handler: Renders LandingPage to guests, redirects logged-in users to /dashboard
+const PublicLandingRoute = () => {
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-950 text-indigo-400">
+        <div className="h-12 w-12 animate-spin rounded-full border-t-4 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <LandingPage />;
+};
+
 function App() {
   useEffect(() => {
     // Pre-fetch and cache departments in localStorage on application load
@@ -70,7 +92,8 @@ function App() {
       <SocketProvider>
         <Router>
         <Routes>
-          {/* Public Authentication Screens */}
+          {/* Public Landing & Authentication Screens */}
+          <Route path="/" element={<PublicLandingRoute />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -90,17 +113,12 @@ function App() {
 
           {/* Secure Workspace Modules inside MainLayout */}
           <Route 
-            path="/" 
             element={
               <ProtectedRoute>
                 <MainLayout />
               </ProtectedRoute>
             }
           >
-            {/* Redirect root path to Dashboard */}
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            
-            {/* Common Dashboard */}
             <Route path="dashboard" element={<Dashboard />} />
             
             {/* General Bulletin board and shared Library */}
