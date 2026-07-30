@@ -75,10 +75,10 @@ export default function LandingPage() {
               </p>
 
               {/* CTAs */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3.5 pt-2">
                 <button
                   onClick={() => navigate('/register')}
-                  className="btn-primary py-3.5 px-7 text-base font-bold shadow-lg shadow-indigo-600/30 group"
+                  className="btn-primary py-3.5 px-7 text-base font-bold shadow-lg shadow-indigo-600/30 group w-full sm:w-auto justify-center"
                 >
                   <span>Get Started Now</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -86,7 +86,7 @@ export default function LandingPage() {
 
                 <button
                   onClick={() => navigate('/login')}
-                  className="btn-secondary py-3.5 px-7 text-base font-bold"
+                  className="btn-secondary py-3.5 px-7 text-base font-bold w-full sm:w-auto justify-center"
                 >
                   <GraduationCap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <span>Portal Login</span>

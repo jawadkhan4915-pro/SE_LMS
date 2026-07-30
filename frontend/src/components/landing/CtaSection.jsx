@@ -29,10 +29,10 @@ export default function CtaSection() {
               Join students, faculty, and administrators already using SE-LMS for seamless learning management, automated attendance, and real-time sessional tracking.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
               <button
                 onClick={() => navigate('/register')}
-                className="btn-primary py-3.5 px-6 text-base font-bold shadow-lg shadow-indigo-600/40 group"
+                className="btn-primary py-3.5 px-6 text-base font-bold shadow-lg shadow-indigo-600/40 group w-full sm:w-auto justify-center"
               >
                 <span>Create Student / Faculty Account</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -40,7 +40,7 @@ export default function CtaSection() {
 
               <button
                 onClick={() => navigate('/login')}
-                className="btn-secondary py-3.5 px-6 text-base font-bold bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white"
+                className="btn-secondary py-3.5 px-6 text-base font-bold bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white w-full sm:w-auto justify-center"
               >
                 <GraduationCap className="w-5 h-5" />
                 <span>Existing User Login</span>

@@ -157,7 +157,7 @@ export default function RoleTabs() {
         </div>
 
         {/* Role Selector Navigation Bar */}
-        <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 max-w-4xl mx-auto mb-12">
+        <div className="flex items-center sm:justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 max-w-4xl mx-auto mb-12 overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap px-2">
           {rolesData.map((role) => {
             const Icon = role.icon;
             const isActive = activeTab === role.id;

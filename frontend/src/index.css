@@ -39,8 +39,20 @@
   }
 
   html {
-    font-size: 15px;
+    font-size: 14px;
     scroll-behavior: smooth;
+  }
+
+  @media (min-width: 640px) {
+    html { font-size: 14.5px; }
+  }
+
+  @media (min-width: 1024px) {
+    html { font-size: 15px; }
+  }
+
+  @media (min-width: 1536px) {
+    html { font-size: 16px; }
   }
 
   body {
@@ -50,6 +62,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: 1.6;
+    overflow-x: hidden;
   }
 
   /* Custom Scrollbar */

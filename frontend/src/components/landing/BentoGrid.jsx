@@ -23,7 +23,7 @@ const modules = [
     icon: BookOpen,
     category: 'Core Academic',
     badgeColor: 'badge-blue',
-    span: 'col-span-12 md:col-span-8',
+    span: 'col-span-12 lg:col-span-8',
     gradient: 'from-indigo-500/10 via-indigo-500/5 to-transparent',
     featured: true
   },
@@ -34,7 +34,7 @@ const modules = [
     icon: Bot,
     category: 'AI Powered',
     badgeColor: 'badge-sky',
-    span: 'col-span-12 md:col-span-4',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-4',
     gradient: 'from-sky-500/10 via-sky-500/5 to-transparent',
     featured: true
   },
@@ -45,7 +45,7 @@ const modules = [
     icon: QrCode,
     category: 'Security',
     badgeColor: 'badge-green',
-    span: 'col-span-12 md:col-span-4',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-4',
     gradient: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
     featured: false
   },
@@ -56,7 +56,7 @@ const modules = [
     icon: Video,
     category: 'Virtual Learning',
     badgeColor: 'badge-amber',
-    span: 'col-span-12 md:col-span-4',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-4',
     gradient: 'from-amber-500/10 via-amber-500/5 to-transparent',
     featured: false
   },
@@ -67,7 +67,7 @@ const modules = [
     icon: CheckCircle2,
     category: 'Operations',
     badgeColor: 'badge-purple',
-    span: 'col-span-12 md:col-span-4',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-4',
     gradient: 'from-purple-500/10 via-purple-500/5 to-transparent',
     featured: false
   },
@@ -78,7 +78,7 @@ const modules = [
     icon: FileText,
     category: 'Assessments',
     badgeColor: 'badge-blue',
-    span: 'col-span-12 md:col-span-6',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-6',
     gradient: 'from-indigo-500/10 via-indigo-500/5 to-transparent',
     featured: false
   },
@@ -89,7 +89,7 @@ const modules = [
     icon: BarChart3,
     category: 'Grading',
     badgeColor: 'badge-sky',
-    span: 'col-span-12 md:col-span-6',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-6',
     gradient: 'from-sky-500/10 via-sky-500/5 to-transparent',
     featured: false
   },
@@ -100,7 +100,7 @@ const modules = [
     icon: Calendar,
     category: 'Scheduling',
     badgeColor: 'badge-amber',
-    span: 'col-span-12 md:col-span-4',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-4',
     gradient: 'from-amber-500/10 via-amber-500/5 to-transparent',
     featured: false
   },
@@ -111,7 +111,7 @@ const modules = [
     icon: CreditCard,
     category: 'Finance',
     badgeColor: 'badge-green',
-    span: 'col-span-12 md:col-span-4',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-4',
     gradient: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
     featured: false
   },
@@ -122,7 +122,7 @@ const modules = [
     icon: Bell,
     category: 'Broadcast',
     badgeColor: 'badge-purple',
-    span: 'col-span-12 md:col-span-4',
+    span: 'col-span-12 sm:col-span-6 lg:col-span-4',
     gradient: 'from-purple-500/10 via-purple-500/5 to-transparent',
     featured: false
   }
